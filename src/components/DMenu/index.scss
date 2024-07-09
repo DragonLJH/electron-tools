@@ -1,0 +1,54 @@
+.d-menu {
+  height: 100%;
+  overflow-y: auto;
+  &-top {
+    padding: 0px 10px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    &.active::after {
+      transform: scale(0.8) rotate(180deg);
+    }
+    &::after {
+      content: "";
+      border: solid 10px transparent;
+      border-right: solid 10px #000;
+      transform: scale(0.8);
+      cursor: pointer;
+    }
+  }
+  &-item {
+    padding: 0px 10px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: center 100%/100% 5% repeat-x
+      linear-gradient(to right, #eee, #ccc);
+    transition: background-color 1s;
+    cursor: pointer;
+    &.active,
+    &:hover {
+      background-color: #e0e0e0;
+      border-radius: 10px;
+    }
+    &-icon {
+      display: inline-flex;
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background-color: #ffffff;
+      align-items: center;
+      justify-content: center;
+      color: #000000;
+      box-shadow: inset 0px 0px 10px 2px #000;
+    }
+    &-label {
+      width: calc(100% - 60px);
+      white-space: nowrap;
+      text-overflow: ellipsis;
+      overflow: hidden;
+    }
+  }
+}

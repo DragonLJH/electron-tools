@@ -1,0 +1,32 @@
+.login-view {
+    width: 100%;
+    height: 100%;
+    background-color: #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    &-main {
+        width: 800px;
+        height: 300px;
+        box-sizing: border-box;
+        border: solid 1px #eee;
+        display: flex;
+        align-items: center;
+        justify-content: space-around;
+        &-left{
+            width: 280px;
+            height: 280px;
+            box-sizing: border-box;
+            border-right: solid 1px #ccc;
+            box-shadow: 1px 0px 1px -1px #ccc;
+        }
+        &-right{
+            width: 500px;
+            height: 280px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+    }
+}

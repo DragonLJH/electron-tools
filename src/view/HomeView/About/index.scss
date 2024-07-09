@@ -1,0 +1,16 @@
+.file-drag {
+  &-rect {
+    width: 200px;
+    height: 300px;
+    display: flex;
+    box-sizing: border-box;
+    border: dashed 1px #ccc;
+  }
+  &-input {
+    width: 200px;
+    height: 300px;
+    display: flex;
+    box-sizing: border-box;
+    border: dashed 1px #ccc;
+  }
+}

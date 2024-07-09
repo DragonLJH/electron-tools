@@ -1,0 +1,139 @@
+.app-top {
+  height: 100px;
+  box-sizing: border-box;
+}
+.app-top-title {
+  height: 50px;
+  line-height: 50px;
+  border-bottom: solid 1px #ccc;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-between;
+}
+.app-top-title > .text {
+  padding-left: 10px;
+}
+.region-drag {
+  flex: 1;
+  -webkit-app-region: drag;
+}
+.app-top-title > .operate {
+  --w: 0px;
+  width: var(--w);
+  display: flex;
+  gap: 10px;
+  height: 50px;
+}
+.app-top-title > .operate > div {
+  position: relative;
+  width: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.app-top-title > .operate > div > span {
+  display: block;
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+}
+
+.app-top-title > .operate > .more-button > .more-button-items {
+  position: absolute;
+  width: 100px;
+  top: 50px;
+  left: -50px;
+  box-shadow: 0px 0px 1px 1px #999;
+  background-color: #fff;
+}
+.app-top-title
+  > .operate
+  > .more-button
+  > .more-button-items
+  > .more-button-items-item {
+  text-align: center;
+  height: 40px;
+  line-height: 35px;
+  cursor: pointer;
+  background: right 100% / 100% 10% no-repeat
+    linear-gradient(to right, #ccc, #999, #ccc);
+}
+.app-top-title
+  > .operate
+  > .more-button
+  > .more-button-items
+  > .more-button-items-item:hover {
+  background-color: #eee;
+}
+.app-top-title > .operate > .more-button > span {
+  background: url(@src/imgs/more-button.svg) center no-repeat;
+}
+.app-top-title > .operate > .min > span {
+  background: url(@src/imgs/min.svg) center no-repeat;
+}
+.app-top-title > .operate > .max > span {
+  background: url(@src/imgs/max.svg) center no-repeat;
+}
+.app-top-title > .operate > .max2 > span {
+  background: url(@src/imgs/max2.svg) center no-repeat;
+}
+.app-top-title > .operate > .close > span {
+  background: url(@src/imgs/close.svg) center no-repeat;
+}
+.app-top-main {
+  display: flex;
+  --h-w: 200px;
+  height: 50px;
+}
+.app-top-main > .app-top-main-history {
+  width: var(--h-w);
+  display: flex;
+}
+.app-top-main > .app-top-main-history > div {
+  width: 50px;
+  height: 50px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.app-top-main > .app-top-main-history > div::after {
+  content: "";
+  width: 20px;
+  height: 20px;
+  background-repeat: no-repeat;
+  background-size: contain;
+}
+.app-top-main > .app-top-main-history > div.home::after {
+  background-image: url(../../imgs/home.svg);
+}
+.app-top-main > .app-top-main-history > div.left::after {
+  background-image: url(../../imgs/left.svg);
+}
+.app-top-main > .app-top-main-history > div.right::after {
+  background-image: url(../../imgs/left.svg);
+  transform: rotate(180deg);
+}
+.app-top-main > .app-top-main-history > div.refresh::after {
+  background-image: url(../../imgs/refresh.svg);
+}
+.app-top-main > .app-top-main-url {
+  width: calc(100% - var(--h-w));
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: solid 1px #ccc;
+  box-sizing: border-box;
+  border-radius: 15px;
+  margin: 5px 10px;
+  padding: 5px 10px;
+}
+.app-top-main > .app-top-main-url > input {
+  width: calc(100% - 20px);
+  height: 30px;
+  box-sizing: border-box;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  outline: none;
+}

@@ -1,0 +1,15 @@
+.home-view {
+  display: flex;
+  gap: 10px;
+  height: 100%;
+  &-left {
+    box-shadow: 1px 0px 1px 1px #ccc;
+  }
+  &-main {
+    flex: 1 1 calc(100% - 210px);
+    > div {
+      width: 100%;
+      height: 100%;
+    }
+  }
+}

@@ -1,0 +1,5 @@
+.app-main{
+    height: calc(100% - 100px);
+    box-sizing: border-box;
+    overflow-y: auto;
+}

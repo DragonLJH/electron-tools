@@ -1,0 +1,6 @@
+#app {
+    width: calc(100% - 100px);
+    height: 100%;
+    margin: 0 auto;
+    outline: solid 1px #f00;
+}

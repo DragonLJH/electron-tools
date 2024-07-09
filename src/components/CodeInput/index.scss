@@ -1,0 +1,17 @@
+.code-input {
+    display: flex;
+    gap: 10px;
+
+    &-input {
+        width: calc(100% - 110px);
+
+        .ant-form-item {
+            margin: 0;
+        }
+
+    }
+
+    &-code {
+        width: 100px;
+    }
+}
