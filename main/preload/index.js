@@ -18,6 +18,8 @@ contextBridge.exposeInMainWorld("ipcR", {
   },
   ipcIsMaximized: (routePath) =>
     ipcRenderer.invoke("ipc-isMaximized", routePath),
+  ipcGetParentWindow: (routePath) =>
+    ipcRenderer.invoke("ipc-getParentWindow", routePath),
   ipcDialogOpen: (data) => ipcRenderer.invoke("ipc-dialogOpen", data),
   ipcReadFile: (path) => ipcRenderer.invoke("ipc-readFile", path),
   ipcAppPath: () => ipcRenderer.invoke("ipc-appPath"),

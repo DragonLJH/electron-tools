@@ -21,6 +21,9 @@ const ipcFun = (win, winList) => {
   ipcMain.handle("ipc-isMaximized", (_, routePath) =>
     winList.get(routePath).isMaximized()
   );
+  ipcMain.handle("ipc-getParentWindow", (_, routePath) =>
+    winList.get(routePath).getParentWindow() ? true : false
+  );
   ipcMain.handle("ipc-dialogOpen", (_, { properties, filters }) => {
     console.log("ipcMain-dialogOpen", { properties, filters });
     return new Promise((resolve, reject) => {
@@ -45,6 +48,7 @@ const ipcFun = (win, winList) => {
       `${URL}#${routePath}`
     );
     win.id = winKey;
+    console.log("ipc-createwin-key:", winKey);
     winList.set(winKey, win);
   });
   ipcMain.handle("ipc-getWin", (_, routePath) => routePath);

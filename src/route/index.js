@@ -11,12 +11,25 @@ export const viewRoutes = requireViewRoutes
     const pageMate = requireViewPages(
       item.replace("index.js", "page.js")
     ).default;
-    const name = item.replace(/^\.\//, "").replace(/\/index.(jsx|js)$/, "");
+    const { isCreate, isMenu } = pageMate.winOp;
+    let name = item.replace(/^\.\//, "").replace(/\/index.(jsx|js)$/, "");
+    if (isCreate && name.indexOf("/") > -1) {
+      name = name.split("/");
+      name = name[name.length - 1];
+    }
+    console.log({
+      name,
+      component: requireViewRoutes(item).default,
+      path: `/${name}`,
+      mate: pageMate,
+    });
+    console.log("----------");
     return {
       name,
       component: requireViewRoutes(item).default,
       path: `/${name}`,
       mate: pageMate,
+      isMenu,
     };
   })
   .filter((item) => item.name.indexOf("/") == -1);

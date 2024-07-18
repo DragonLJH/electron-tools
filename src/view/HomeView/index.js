@@ -28,7 +28,13 @@ const HomeView = () => {
     let winKey = Math.random().toString().slice(2);
     let { key, label, mate } = data;
     const { winOp } = mate;
-    history.push(key);
+    const { isCreate } = winOp;
+    if (isCreate) {
+      key = key.split("/");
+      key = key[key.length - 1];
+    } else {
+      history.push(key);
+    }
     window.ipcR.ipcCreatewin({
       winKey,
       routeOp: winOp,

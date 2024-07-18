@@ -2,9 +2,14 @@ import React, { useEffect, useState, useContext, useRef, useMemo } from "react";
 import "./index.css";
 import { useHistory, useLocation } from "react-router-dom";
 import { viewRoutes } from "@src/route/index";
+function useQuery() {
+  const { search } = useLocation();
+  return React.useMemo(() => new URLSearchParams(search), [search]);
+}
 const AppTop = () => {
   const l = useLocation();
   const h = useHistory();
+  let query = useQuery();
   const operate = useRef(null);
   const [winKey, setWinKey] = useState("Home");
   const [operateCount, setOperateCount] = useState(0);
@@ -26,7 +31,16 @@ const AppTop = () => {
       routePath: `${path}?winKey=${winKey}`,
     });
   };
+  const hasParent = useMemo(() => {
+    for (let [key, value] of query.entries()) {
+      if (key === "winKey") {
+        return window.ipcR.ipcGetParentWindow(value);
+      }
+    }
+    return false;
+  }, []);
   useEffect(() => {
+    console.log("hasParent", hasParent);
     if (l.search) setWinKey(l.search.replace("?", "").split("=")[1]);
   }, []);
   useEffect(() => {
@@ -49,29 +63,31 @@ const AppTop = () => {
               "--w": `${operateCount * 50 + (operateCount - 1) * 10}px`,
             }}
           >
-            <div className="more-button">
-              <span onClick={() => setMoreButton(true)}></span>
-              {moreButton && (
-                <div
-                  className="more-button-items"
-                  onMouseLeave={() => setMoreButton(false)}
-                >
-                  {viewRoutes
-                    .filter((item) => item.path !== "/HomeView")
-                    .map((item, index) => {
-                      return (
-                        <div
-                          className="more-button-items-item"
-                          key={index}
-                          onClick={() => openWin(item)}
-                        >
-                          {item.mate.label}
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
-            </div>
+            {!hasParent && (
+              <div className="more-button">
+                <span onClick={() => setMoreButton(true)}></span>
+                {moreButton && (
+                  <div
+                    className="more-button-items"
+                    onMouseLeave={() => setMoreButton(false)}
+                  >
+                    {viewRoutes
+                      .filter((item) => item.isMenu)
+                      .map((item, index) => {
+                        return (
+                          <div
+                            className="more-button-items-item"
+                            key={index}
+                            onClick={() => openWin(item)}
+                          >
+                            {item.mate.label}
+                          </div>
+                        );
+                      })}
+                  </div>
+                )}
+              </div>
+            )}
             <div className="min">
               <span onClick={() => window.ipcR.ipcMinimize(winKey)}></span>
             </div>
