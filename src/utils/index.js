@@ -1,3 +1,9 @@
+var id = 0;
+
+export const getID = () => {
+  return id++;
+};
+
 var str = "abcdefghijkmnpqrstuvwxyABCDEFGHIJLMNOPQRSTUVWXYZ123456789";
 // 随机字符
 export const randomStr = (num) => {
@@ -26,19 +32,14 @@ export const codeCanvas = (el, num = 4) => {
 };
 
 // 防抖
-export const fd = (fn, d = 1000) => {
+export const debounce = (fn, delay = 500) => {
   let timer;
-  return (...data) => {
-    if (timer) {
-      clearTimeout(timer);
-      timer = setTimeout(() => {
-        fn(...data);
-      }, d);
-      return;
-    }
+  return (...args) => {
+    if (timer) clearTimeout(timer);
     timer = setTimeout(() => {
-      fn(...data);
-    }, d);
+      fn(...args);
+      timer = null;
+    }, delay);
   };
 };
 export const mergeObj = (m1, m2) => {
@@ -56,4 +57,9 @@ export const mergeObj = (m1, m2) => {
   return res;
 };
 
-
+// 将字符串转换成xml对象
+export const stringToXML = (xmlString) => {
+  let parser = new DOMParser();
+  let xmlObject = parser.parseFromString(xmlString, "text/xml");
+  return xmlObject;
+};
