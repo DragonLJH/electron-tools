@@ -113,7 +113,7 @@ const MyComponent = (props) => {
         <div className="app-main">
           {/* 重定向登录页 */}
           <Route exact path="/">
-            <Redirect to="/HomeView" />
+            <Redirect to="/HomeView/UpdateExe" />
           </Route>
           {/* 路由配置 */}
           {routes.map((route, index) => {

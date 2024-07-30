@@ -1,0 +1,98 @@
+.update-exe {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 20px;
+  .btn {
+    --b-c: #973131;
+    --c: #fcfcfc;
+    cursor: pointer;
+    background-color: var(--b-c);
+    color: var(--c);
+    border-radius: 5px;
+    padding: 5px 10px;
+    box-shadow: 1px 1px 2px #ccc;
+    &:hover {
+      background-color: var(--c);
+      color: var(--b-c);
+    }
+  }
+  > div {
+    width: 600px;
+    height: 400px;
+    overflow-y: scroll;
+    background-color: #f5f5f5;
+    border-radius: 10px;
+    padding: 20px;
+    font-size: 16px;
+    color: #333;
+    box-shadow: 0 0 10px #ccc;
+  }
+  .step-1 {
+    .download-box {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #999;
+      padding: 20px;
+      .step-title {
+        display: flex;
+        align-items: center;
+        > span {
+          &:first-child {
+            flex: 0 1 100px;
+          }
+          flex: 1;
+        }
+      }
+      .input-box {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        &::before {
+          content: attr(data-label);
+          user-select: none;
+        }
+        > input {
+          &:focus,
+          &:active,
+          &:focus-visible {
+            outline: none;
+          }
+          flex: 1;
+          border: none;
+          height: 25px;
+        }
+      }
+      .progress {
+        width: 100%;
+        padding: 0px 10px;
+        display: flex;
+        gap: 10px;
+        --t-w: 50px;
+        .progress-whole {
+          width: calc(100% - var(--t-w));
+          background-color: #eee;
+          border-radius: 10px;
+          overflow: hidden;
+          .progress-part {
+            height: 100%;
+            background: left 1% / 100% 100% repeat-x
+              linear-gradient(to right, #999, #666);
+            transition: width 2s;
+          }
+        }
+        .text {
+          width: var(--t-w);
+        }
+      }
+    }
+  }
+  .step-2 {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    align-content: flex-start;
+  }
+}

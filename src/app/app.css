@@ -1,5 +1,21 @@
-.app-main{
-    height: calc(100% - 100px);
-    box-sizing: border-box;
-    overflow-y: auto;
+.app-main {
+  height: calc(100% - 100px);
+  box-sizing: border-box;
+  overflow-y: auto;
+}
+::-webkit-scrollbar {
+  width: 4px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
 }

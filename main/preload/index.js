@@ -27,6 +27,49 @@ contextBridge.exposeInMainWorld("ipcR", {
     routeOp.isCreate &&
     ipcRenderer.send("ipc-createwin", { winKey, routeOp, routePath }),
   ipcGetWin: (routePath) => ipcRenderer.invoke("ipc-getWin", routePath),
+  ipcGotDownload: ({ url, isStream, callback }) => {
+    ipcRenderer.send("ipc-got-download", { url, isStream });
+    // ipcRenderer.on("download-progress", (event, progress) => {
+    //   callback(progress);
+    // });
+    ipcRenderer.on("download-success", (event) => {
+      callback("success");
+    });
+  },
+  ipcChangeExe: ({ brand, productName, date, callback }) => {
+    ipcRenderer.send("ipc-change-exe", { brand, productName, date });
+    ipcRenderer.on("change-exe-success", (event) => {
+      callback("success");
+    });
+    ipcRenderer.on("change-exe-err", (event) => {
+      callback("err");
+    });
+  },
+  ipcGetExeToRc: () => ipcRenderer.invoke("ipc-get-exe-to-rc"),
+  ipcChangeRc: (rcContent, callback) => {
+    ipcRenderer.send("ipc-change-rc", rcContent);
+    ipcRenderer.on("change-rc-success", (event) => {
+      callback("success");
+    });
+  },
+  ipcDigitalSignature: (callback) => {
+    ipcRenderer.send("ipc-digital-signature");
+    ipcRenderer.on("digital-signature-success", (event) => {
+      callback("success");
+    });
+    ipcRenderer.on("digital-signature-err", (event) => {
+      callback("err");
+    });
+  },
+  ipcWvpSignature: (callback) => {
+    ipcRenderer.send("ipc-wvp-signature");
+    ipcRenderer.on("wvp-signature-success", (event) => {
+      callback("success");
+    });
+    ipcRenderer.on("wvp-signature-err", (event) => {
+      callback("err");
+    });
+  },
 });
 
 contextBridge.exposeInMainWorld("versions", {
