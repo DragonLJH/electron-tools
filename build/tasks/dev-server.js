@@ -45,7 +45,7 @@ class ElectronProcess {
     this._startElectron();
   }
   _startElectron() {
-    this.process = spawn(electron, ["."]);
+    this.process = spawn(electron, ["main/main.js"]);
     this.process.stdout.on("data", (data) => {
       let message = data.toString();
       console.log("ElectronProcess-stdout:", message.toString());
@@ -73,7 +73,7 @@ const startRenderer = async () => {
   const server = new WebpackDevServer(devServerOptions, rendererCompiler);
   await server.start().catch((err) => {
     if (err) {
-      exConsole.error("Dev Server failed to activate.", err);
+      console.error("Dev Server failed to activate.", err);
     }
   });
 };

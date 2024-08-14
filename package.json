@@ -2,33 +2,95 @@
   "name": "electron-react-base",
   "version": "1.0.0",
   "description": "",
-  "main": "main/index.js",
+  "main": "dist/main/main.js",
   "scripts": {
     "start": "electron .",
-    "dev": "cross-env NODE_ENV=development node build/tasks/dev-server.js"
+    "start:dist": "npm run dist && electron dist/main/main.js",
+    "dev": "cross-env NODE_ENV=development node build/tasks/dev-server.js",
+    "dist": "cross-env NODE_ENV=production node build/tasks/build.js",
+    "build:win": "npm run dist && electron-builder --win --x64"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
+  "build": {
+    "appId": "com.example.my-electron-app",
+    "productName": "My Electron App",
+    "asar": true,
+    "electronVersion": "15.5.7",
+    "electronDist": "node_modules/electron/dist",
+    "directories": {
+      "output": "release/erb",
+      "buildResources": "build"
+    },
+    "files": [
+      "dist/**/*",
+      "node_modules/**/*",
+      "package.json"
+    ],
+    "extraResources": [
+      "assets/**/*"
+    ],
+    "nsis": {
+      "oneClick": false,
+      "perMachine": true,
+      "allowToChangeInstallationDirectory": true,
+      "include": "",
+      "displayLanguageSelector": true,
+      "multiLanguageInstaller": true,
+      "installerLanguages": [
+        "en_US",
+        "de_DE",
+        "fr_FR",
+        "ja_JP",
+        "zh_TW",
+        "es-ES",
+        "it-IT",
+        "ko-KR",
+        "nl-NL",
+        "pl-PL",
+        "pt-PT",
+        "ru-RU"
+      ],
+      "license": "",
+      "installerSidebar": "",
+      "uninstallerSidebar": "",
+      "guid": ""
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        },
+        {
+          "target": "zip"
+        }
+      ],
+      "icon": null
+    }
+  },
   "devDependencies": {
     "@ant-design/icons": "^5.2.6",
     "@babel/core": "^7.23.0",
     "@babel/preset-env": "^7.22.20",
     "@babel/preset-react": "^7.22.15",
     "@bpmn-io/properties-panel": "^3.13.0",
-    
-    "bpmn-js": "^15.1.3",
-    "bpmn-js-properties-panel": "^5.6.1",
-    "bpmn-js-token-simulation": "^0.31.1",
     "antd": "^5.9.3",
     "babel-loader": "^9.1.3",
+    "bpmn-js": "^15.1.3",
+    "bpmn-js-properties-panel": "^5.21.0",
+    "bpmn-js-token-simulation": "^0.31.1",
     "cross-env": "^7.0.3",
     "css-loader": "^6.7.3",
-    "electron": "15.5.7",
-    "electron-builder": "^22.3.2",
+    "electron": "^31.3.1",
+    "electron-builder": "^24.13.3",
     "html-webpack-plugin": "^5.2.0",
     "mini-css-extract-plugin": "^2.7.6",
     "node-sass": "^9.0.0",
+    "python-shell": "^5.0.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",
     "react-router-dom": "^5.3.4",
@@ -38,6 +100,7 @@
     "webpack": "^5.4.0",
     "webpack-cli": "^4.9.0",
     "webpack-dev-server": "4.12.0",
-    "webpack-merge": "^5.10.0"
+    "webpack-merge": "^5.10.0",
+    "electron-log": "^4.4.4"
   }
 }

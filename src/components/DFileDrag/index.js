@@ -36,7 +36,7 @@ const DFileDrag = (props) => {
     if (!fMsg.canceled) {
       console.log("d-file-drag", fMsg);
       fMsg.filePaths.forEach((path) => {
-        console.log("d-file-drag", path, window.ipcR.ipcReadFile(path));
+        console.log("d-file-drag", path, window.ipcR.ipcReadFile({ path }));
       });
     }
   };

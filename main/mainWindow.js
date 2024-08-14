@@ -53,7 +53,7 @@ const createwin = (winOp, url) => {
   if (isDevelopment) {
     win.loadURL(url);
   } else {
-    const entryPath = path.resolve(__dirname, "../../dist/index.html");
+    const entryPath = path.resolve(__dirname, "../../dist/renderer/index.html");
     win.loadFile(entryPath);
   }
 

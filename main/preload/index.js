@@ -21,28 +21,27 @@ contextBridge.exposeInMainWorld("ipcR", {
   ipcGetParentWindow: (routePath) =>
     ipcRenderer.invoke("ipc-getParentWindow", routePath),
   ipcDialogOpen: (data) => ipcRenderer.invoke("ipc-dialogOpen", data),
-  ipcReadFile: (path) => ipcRenderer.invoke("ipc-readFile", path),
+  ipcReadFile: ({ path, encoding }) =>
+    ipcRenderer.invoke("ipc-readFile", { path, encoding }),
   ipcAppPath: () => ipcRenderer.invoke("ipc-appPath"),
   ipcCreatewin: ({ routeOp, routePath, winKey }) =>
     routeOp.isCreate &&
     ipcRenderer.send("ipc-createwin", { winKey, routeOp, routePath }),
   ipcGetWin: (routePath) => ipcRenderer.invoke("ipc-getWin", routePath),
-  ipcGotDownload: ({ url, isStream, callback }) => {
-    ipcRenderer.send("ipc-got-download", { url, isStream });
-    // ipcRenderer.on("download-progress", (event, progress) => {
-    //   callback(progress);
-    // });
+  ipcGotDownload: ({ url, isStream, callback, progressCallback }) => {
+    const isProgress = (progressCallback ?? false) && true;
+    ipcRenderer.send("ipc-got-download", { url, isStream, isProgress });
+    ipcRenderer.on("download-progress", (event, percent) => {
+      progressCallback(percent);
+    });
     ipcRenderer.on("download-success", (event) => {
       callback("success");
     });
   },
-  ipcChangeExe: ({ brand, productName, date, callback }) => {
-    ipcRenderer.send("ipc-change-exe", { brand, productName, date });
-    ipcRenderer.on("change-exe-success", (event) => {
-      callback("success");
-    });
-    ipcRenderer.on("change-exe-err", (event) => {
-      callback("err");
+  ipcChangeExe: ({ iconPath }, callback) => {
+    ipcRenderer.send("ipc-change-exe", { iconPath });
+    ipcRenderer.on("change-exe-res", (event, { code, result, msg }) => {
+      callback({ code, result, msg });
     });
   },
   ipcGetExeToRc: () => ipcRenderer.invoke("ipc-get-exe-to-rc"),
@@ -52,22 +51,16 @@ contextBridge.exposeInMainWorld("ipcR", {
       callback("success");
     });
   },
-  ipcDigitalSignature: (callback) => {
-    ipcRenderer.send("ipc-digital-signature");
-    ipcRenderer.on("digital-signature-success", (event) => {
-      callback("success");
-    });
-    ipcRenderer.on("digital-signature-err", (event) => {
-      callback("err");
+  ipcDigitalSignature: ({ signaturePath, signaturePwd }, callback) => {
+    ipcRenderer.send("ipc-digital-signature", { signaturePath, signaturePwd });
+    ipcRenderer.on("digital-signature-res", (event, { code, result }) => {
+      callback({ code, result });
     });
   },
-  ipcWvpSignature: (callback) => {
-    ipcRenderer.send("ipc-wvp-signature");
-    ipcRenderer.on("wvp-signature-success", (event) => {
-      callback("success");
-    });
-    ipcRenderer.on("wvp-signature-err", (event) => {
-      callback("err");
+  ipcWvpSignature: ({ accountName, password }, callback) => {
+    ipcRenderer.send("ipc-wvp-signature", { accountName, password });
+    ipcRenderer.on("wvp-signature-res", (event, { code, result }) => {
+      callback({ code, result });
     });
   },
 });

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DTextChange from "@src/components/DTextChange";
+import { DStepCard, DStepCardItem } from "@src/components/DStepCard";
+
 import "./index.scss";
 const UpdateExe = () => {
   const [rcContent, setRcContent] = useState("");
@@ -8,33 +10,62 @@ const UpdateExe = () => {
     progress: 0,
     status: "waiting",
   });
-  const [stepB, setStepB] = useState({
-    brand: "Loong",
-    productName: "Loong Dragon",
-    date: "2024",
+  const [stepB, setStepB] = useState({});
+  const [stepC, setStepC] = useState({
+    signaturePath: "",
+    signaturePwd: "yian22()",
+  });
+  const [stepD, setStepD] = useState({
+    accountName: "loongjh",
+    password: "Long1234.",
   });
   const [rcList, setRcList] = useState([]);
+  const [stepList, setStepList] = useState(
+    new Array(4).fill(undefined).map((_, index) => {
+      const step = index + 1;
+      return {
+        step: index,
+        title: `步骤${step}`,
+        status: step === 1 ? "process" : "waiting",
+      };
+    })
+  );
   const download = () => {
     window.ipcR.ipcGotDownload({
       url: stepA.url,
       isStream: true,
       callback: async function (data) {
-        // const { percent } = data;
-        // percent = Number((percent * 100).toFixed(0));
-        // setStepList((pre) => {
-        //   pre[0].progress = percent;
-        //   return pre;
-        // });
-        // console.log(`progress:`, percent);
-        setStepA({ ...stepA, status: data });
-        console.log(`download:`, data);
+        setStepA((pre) => {
+          return { ...pre, status: data };
+        });
         setRcContent(await window.ipcR.ipcGetExeToRc());
+        setStepList((pre) => {
+          pre[0].status = "finish";
+          pre[1].status = "process";
+          return pre.map((item, index) => {
+            return { ...item };
+          });
+        });
+      },
+      progressCallback: async function (percent) {
+        percent = Number((percent * 100).toFixed(1));
+        setStepA((pre) => {
+          return { ...pre, progress: percent };
+        });
       },
     });
   };
   const changeExe = () => {
-    window.ipcR.ipcChangeExe(stepB, (res) => {
-      alert(`changeExe ${res}`);
+    window.ipcR.ipcChangeExe(stepB, ({ code, result, msg }) => {
+      alert(`changeExe ${msg}`);
+      if (code === -1) return;
+      setStepList((pre) => {
+        pre[1].status = "finish";
+        pre[2].status = "process";
+        return pre.map((item, index) => {
+          return { ...item };
+        });
+      });
     });
   };
   const changeRc = () => {
@@ -43,14 +74,68 @@ const UpdateExe = () => {
     });
   };
   const digitalSignature = () => {
-    window.ipcR.ipcDigitalSignature((res) => {
-      alert(`digitalSignature ${res}`);
+    window.ipcR.ipcDigitalSignature(stepC, ({ code, result }) => {
+      if (code === 0) {
+        setStepList((pre) => {
+          pre[2].status = "finish";
+          pre[3].status = "process";
+          return pre.map((item, index) => {
+            return { ...item };
+          });
+        });
+      }
+      alert(`digitalSignature: ${result}`);
     });
   };
   const ipcWvpSignature = () => {
-    window.ipcR.ipcWvpSignature((res) => {
-      alert(`ipcWvpSignature ${res}`);
+    window.ipcR.ipcWvpSignature(stepD, ({ code, result }) => {
+      if (code === 0) {
+        setStepList((pre) => {
+          pre[3].status = "finish";
+          return pre.map((item, index) => {
+            return { ...item };
+          });
+        });
+      }
+      alert(`ipcWvpSignature ${result}`);
     });
+  };
+
+  const changeStepB = async () => {
+    let icoMsg = await window.ipcR.ipcDialogOpen({
+      properties: ["openFile"],
+      filters: [
+        {
+          name: "Tracks",
+          extensions: ["ico"],
+        },
+      ],
+    });
+    if (!icoMsg.canceled) {
+      const iconPath = icoMsg.filePaths[0];
+      const iconBase64 = await window.ipcR.ipcReadFile({
+        path: iconPath,
+        encoding: "base64",
+      });
+      const iconUri = `data:image/jpg;base64,${iconBase64}`;
+      console.log({ iconUri });
+      setStepB({ ...stepB, iconPath, iconUri });
+    }
+  };
+  const changeStepC = async () => {
+    let signatureMsg = await window.ipcR.ipcDialogOpen({
+      properties: ["openFile"],
+      filters: [
+        {
+          name: "Tracks",
+          extensions: ["pfx"],
+        },
+      ],
+    });
+    if (!signatureMsg.canceled) {
+      const signaturePath = signatureMsg.filePaths[0];
+      setStepC({ ...stepC, signaturePath });
+    }
   };
 
   useEffect(() => {
@@ -62,67 +147,135 @@ const UpdateExe = () => {
   return (
     <>
       <div className="update-exe">
-        <div className="step-1">
-          <div className="download-box">
-            <div className="step-title">
-              <span>下载资源</span>
-              <span>{stepA.url}</span>
-            </div>
-            <div className="input-box" data-label="url">
-              <input
-                type="text"
-                value={stepA.url}
-                onChange={(e) => {
-                  console.log(e.target.value);
-                  setStepA({ ...stepA, url: e.target.value });
-                }}
-              />
-              <div className="btn" onClick={download}>
-                download
+        <DStepCard {...{ stepList, w: 600, h: 400 }}>
+          <DStepCardItem>
+            <div className="download-box">
+              <div className="box-title">
+                <span>下载资源</span>
+                <span>{stepA.url}</span>
+              </div>
+              <div
+                className="input-box"
+                style={{ width: "100%" }}
+                data-label="url: "
+              >
+                <input
+                  type="text"
+                  value={stepA.url}
+                  onChange={(e) => {
+                    console.log(stepA, e.target.value);
+                    setStepA({ ...stepA, url: e.target.value });
+                  }}
+                />
+                <div className="btn" onClick={download}>
+                  download
+                </div>
+              </div>
+              <div className="progress">
+                <div className="progress-whole">
+                  <div
+                    className="progress-part"
+                    style={{ width: `${stepA.progress}%` }}
+                  ></div>
+                </div>
+                <div className="text">{stepA.progress}%</div>
               </div>
             </div>
-            <div>{stepA.status}</div>
-            {/* <div className="progress">
-              <div className="progress-whole">
+          </DStepCardItem>
+          <DStepCardItem>
+            <div className="img-box" onClick={changeStepB}>
+              {stepB.iconUri && (
                 <div
-                  className="progress-part"
-                  style={{ width: `${stepList[0].progress}%` }}
+                  className="img-item"
+                  style={{
+                    backgroundImage: `url(${stepB.iconUri})`,
+                    backgroundSize: "cover",
+                    backgroundPosition: "center",
+                    width: "100px",
+                    height: "100px",
+                  }}
                 ></div>
+              )}
+            </div>
+            {rcList.map((item, index) => {
+              return (
+                <DTextChange
+                  value={item}
+                  callback={(data) => {
+                    const list = [...rcList];
+                    list.splice(index, 1, data);
+                    setRcList(list);
+                    console.log(data);
+                  }}
+                  key={index}
+                />
+              );
+            })}
+            <div className="flex-center" style={{ gap: "30px" }}>
+              <div className="btn" onClick={changeRc}>
+                changeRc
               </div>
-              <div className="text">{stepList[0].progress}%</div>
-            </div> */}
-          </div>
-        </div>
-        <div className="step-2">
-          {rcList.map((item, index) => {
-            return (
+              <div className="btn" onClick={changeExe}>
+                changeExe
+              </div>
+            </div>
+          </DStepCardItem>
+          <DStepCardItem>
+            <div className="img-box" onClick={changeStepC}>
+              {stepC.signaturePath}
+            </div>
+
+            <div
+              className="input-box"
+              style={{ width: "100%" }}
+              data-label="pwd: "
+            >
               <DTextChange
-                value={item}
+                value={stepC.signaturePwd}
                 callback={(data) => {
-                  const list = [...rcList];
-                  list.splice(index, 1, data);
-                  setRcList(list);
-                  console.log(data);
+                  setStepC({ ...stepC, signaturePwd: data });
                 }}
-                key={index}
               />
-            );
-          })}
-          <div className="btn" onClick={changeRc}>
-            changeRc
-          </div>
-          <div className="btn" onClick={changeExe}>
-            changeExe
-          </div>
-          <div className="btn" onClick={digitalSignature}>
-            digitalSignature
-          </div>
-          <div className="btn" onClick={ipcWvpSignature}>
-          ipcWvpSignature
-          </div>
-        </div>
-        <div className="step-3"></div>
-        <div className="step-4"></div>
+            </div>
+
+            <div className="flex-center" style={{ gap: "30px" }}>
+              <div className="btn" onClick={digitalSignature}>
+                digitalSignature
+              </div>
+            </div>
+          </DStepCardItem>
+          <DStepCardItem>
+            <div
+              className="input-box"
+              style={{ width: "100%" }}
+              data-label="accountName: "
+            >
+              <DTextChange
+                value={stepD.accountName}
+                callback={(data) => {
+                  setStepD({ ...stepD, accountName: data });
+                }}
+              />
+            </div>
+            <div
+              className="input-box"
+              style={{ width: "100%" }}
+              data-label="password: "
+            >
+              <DTextChange
+                value={stepD.password}
+                callback={(data) => {
+                  setStepD({ ...stepD, password: data });
+                }}
+              />
+            </div>
+            <div className="flex-center" style={{ gap: "30px" }}>
+              <div className="btn" onClick={ipcWvpSignature}>
+                ipcWvpSignature
+              </div>
+            </div>
+          </DStepCardItem>
+        </DStepCard>
       </div>
     </>
   );
