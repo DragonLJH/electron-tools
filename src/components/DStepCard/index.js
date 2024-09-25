@@ -60,7 +60,7 @@ export const DStepCardItem = (props) => {
   const { children, stepIndex, activeStepIndex, status, handleClick } = props;
   
   useEffect(() => {
-    console.log("DStepCardItem activeStepIndex", activeStepIndex, status);
+    console.log("DStepCardItem props", props);
   }, [activeStepIndex]);
   return (
     stepIndex === activeStepIndex && (

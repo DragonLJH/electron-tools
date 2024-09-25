@@ -1,8 +1,8 @@
 import { randomStr } from "../../utils/index"
-const id = randomStr(30).join("")
-const processId = "Process_" + randomStr(8).join("")
-const bpmnDiagramId = "BpmnDiagram_" + randomStr(8).join("")
-const bpmnPlaneId = "BpmnPlane_" + randomStr(8).join("")
+const id = randomStr(30)
+const processId = "Process_" + randomStr(8)
+const bpmnDiagramId = "BpmnDiagram_" + randomStr(8)
+const bpmnPlaneId = "BpmnPlane_" + randomStr(8)
 export const initialDiagram =
     '<?xml version="1.0" encoding="UTF-8"?>' +
     '<bpmn:definitions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" ' +

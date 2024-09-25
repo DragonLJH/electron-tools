@@ -1,6 +1,7 @@
 const { createwin, URL } = require("./mainWindow");
 const { app, ipcMain, dialog } = require("electron");
 const { updateExe } = require("./updateExe");
+const { deleteFolderRecursive } = require("./commonFn");
 
 const fs = require("fs");
 const ipcFun = (win, winList) => {
@@ -56,6 +57,9 @@ const ipcFun = (win, winList) => {
     winList.set(winKey, win);
   });
   ipcMain.handle("ipc-getWin", (_, routePath) => routePath);
+  ipcMain.on("ipc-delete-folder", (_, targetPath) => {
+    deleteFolderRecursive(targetPath);
+  });
   updateExe.init();
 };
 

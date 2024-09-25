@@ -1,0 +1,25 @@
+.d-progress-box {
+  width: 100%;
+  .d-progress {
+    width: 100%;
+    padding: 0px 10px;
+    display: flex;
+    gap: 10px;
+    --t-w: 50px;
+    .whole {
+      width: calc(100% - var(--t-w));
+      background-color: #eee;
+      border-radius: 10px;
+      overflow: hidden;
+      .part {
+        height: 100%;
+        background: left 1% / 100% 100% repeat-x
+          linear-gradient(to right, #999, #666);
+        transition: width 1s;
+      }
+    }
+    .text {
+      width: var(--t-w);
+    }
+  }
+}

@@ -66,19 +66,19 @@
   background-color: #eee;
 }
 .app-top-title > .operate > .more-button > span {
-  background: url(@src/imgs/more-button.svg) center no-repeat;
+  background: url(@assets/imgs/more-button.svg) center no-repeat;
 }
 .app-top-title > .operate > .min > span {
-  background: url(@src/imgs/min.svg) center no-repeat;
+  background: url(@assets/imgs/min.svg) center no-repeat;
 }
 .app-top-title > .operate > .max > span {
-  background: url(@src/imgs/max.svg) center no-repeat;
+  background: url(@assets/imgs/max.svg) center no-repeat;
 }
 .app-top-title > .operate > .max2 > span {
-  background: url(@src/imgs/max2.svg) center no-repeat;
+  background: url(@assets/imgs/max2.svg) center no-repeat;
 }
 .app-top-title > .operate > .close > span {
-  background: url(@src/imgs/close.svg) center no-repeat;
+  background: url(@assets/imgs/close.svg) center no-repeat;
 }
 .app-top-main {
   display: flex;
@@ -105,17 +105,17 @@
   background-size: contain;
 }
 .app-top-main > .app-top-main-history > div.home::after {
-  background-image: url(../../imgs/home.svg);
+  background-image: url(@assets/imgs/home.svg);
 }
 .app-top-main > .app-top-main-history > div.left::after {
-  background-image: url(../../imgs/left.svg);
+  background-image: url(@assets/imgs/left.svg);
 }
 .app-top-main > .app-top-main-history > div.right::after {
-  background-image: url(../../imgs/left.svg);
+  background-image: url(@assets/imgs/left.svg);
   transform: rotate(180deg);
 }
 .app-top-main > .app-top-main-history > div.refresh::after {
-  background-image: url(../../imgs/refresh.svg);
+  background-image: url(@assets/imgs/refresh.svg);
 }
 .app-top-main > .app-top-main-url {
   width: calc(100% - var(--h-w));

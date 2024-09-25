@@ -34,10 +34,12 @@ contextBridge.exposeInMainWorld("ipcR", {
     ipcRenderer.on("download-progress", (event, percent) => {
       progressCallback(percent);
     });
-    ipcRenderer.on("download-success", (event) => {
-      callback("success");
+    ipcRenderer.on("download-res", (event, { code, result, msg }) => {
+      callback({ code, result, msg });
     });
   },
+  ipcDiscontinue: () => ipcRenderer.invoke("ipc-discontinue"),
+  ipcDiscontinueChange: () => ipcRenderer.send("ipc-discontinue-change"),
   ipcChangeExe: ({ iconPath }, callback) => {
     ipcRenderer.send("ipc-change-exe", { iconPath });
     ipcRenderer.on("change-exe-res", (event, { code, result, msg }) => {
@@ -53,13 +55,17 @@ contextBridge.exposeInMainWorld("ipcR", {
   },
   ipcDigitalSignature: ({ signaturePath, signaturePwd }, callback) => {
     ipcRenderer.send("ipc-digital-signature", { signaturePath, signaturePwd });
-    ipcRenderer.on("digital-signature-res", (event, { code, result }) => {
-      callback({ code, result });
-    });
+    ipcRenderer.on("digital-signature-res", callback);
   },
   ipcWvpSignature: ({ accountName, password }, callback) => {
     ipcRenderer.send("ipc-wvp-signature", { accountName, password });
     ipcRenderer.on("wvp-signature-res", (event, { code, result }) => {
+      callback({ code, result });
+    });
+  },
+  ipcExpandArchive: ({ targetPath, callback }) => {
+    ipcRenderer.send("ipc-expand-archive", targetPath);
+    ipcRenderer.on("expand-archive-res", (event, { code, result }) => {
       callback({ code, result });
     });
   },

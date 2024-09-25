@@ -32,6 +32,50 @@ const cleanOutput = async (folderPath) => {
   }
 };
 
+const copyFolder = (source, destination) => {
+  if (!fs.existsSync(source)) {
+    throw new Error(`源文件夹 ${source} 不存在。`);
+  }
+  if (!fs.existsSync(destination)) {
+    fs.mkdirSync(destination, { recursive: true });
+  }
+  const items = fs.readdirSync(source);
+  for (const item of items) {
+    const sourcePath = path.join(source, item);
+    const destinationPath = path.join(destination, item);
+    const stat = fs.statSync(sourcePath);
+    if (stat.isDirectory()) {
+      copyFolder(sourcePath, destinationPath);
+    } else {
+      fs.copyFileSync(sourcePath, destinationPath);
+    }
+  }
+};
+
+const initAssets = async () => {
+  try {
+    console.log("initAssets start");
+    const assetsPath = path.join(__dirname, "../../assets");
+    // 检查输出文件夹是否存在
+    if (!fs.existsSync(assetsPath)) {
+      fs.mkdirSync(assetsPath, { recursive: true });
+    }
+    await Promise.all(
+      ["exe", "src/imgs"]
+        .map((itemPath) => [
+          path.join(__dirname, `../../${itemPath}`),
+          path.join(assetsPath, path.basename(itemPath)),
+        ])
+        .map(
+          async ([source, destination]) => await copyFolder(source, destination)
+        )
+    );
+    console.log("initAssets success!");
+  } catch (error) {
+    console.error("initAssets error:", error);
+  }
+};
+
 const buildMain = () => {
   return new Promise((resolve, reject) => {
     webpack(webpackConfigMain, (err, stats) => {
@@ -61,11 +105,12 @@ const buildRenderer = () => {
   const packageJsonContent = fs.readFileSync(packageJsonPath, "utf-8");
   const { output } = JSON.parse(packageJsonContent)?.build?.directories;
 
-  cleanOutput(path.join(__dirname, "../../", output));
+  await cleanOutput(path.join(__dirname, "../../assets"));
+  await cleanOutput(path.join(__dirname, "../../", output));
   Object.entries(devServerOptions).forEach(([key, value]) => {
     process.env[key] = value;
   });
-  Promise.all([buildMain(), buildRenderer()])
+  Promise.all([initAssets(), buildMain(), buildRenderer()])
     .then(() => {
       console.info(
         `[Building...] : 构建完成 ✌️🙌 in ${Math.floor(

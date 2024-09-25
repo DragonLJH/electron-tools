@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import DTextChange from "@src/components/DTextChange";
 import { DStepCard, DStepCardItem } from "@src/components/DStepCard";
+import { DProgress } from "@src/components";
 
 import "./index.scss";
 const UpdateExe = () => {
@@ -10,6 +11,7 @@ const UpdateExe = () => {
     progress: 0,
     status: "waiting",
   });
+  const [filePath, setFilePath] = useState("");
   const [stepB, setStepB] = useState({});
   const [stepC, setStepC] = useState({
     signaturePath: "",
@@ -34,9 +36,13 @@ const UpdateExe = () => {
     window.ipcR.ipcGotDownload({
       url: stepA.url,
       isStream: true,
-      callback: async function (data) {
+      callback: async function ({ code, result, msg }) {
+        alert(`download ${result}`);
+        if (code === -1) {
+          return;
+        }
         setStepA((pre) => {
-          return { ...pre, status: data };
+          return { ...pre, status: result };
         });
         setRcContent(await window.ipcR.ipcGetExeToRc());
         setStepList((pre) => {
@@ -53,10 +59,14 @@ const UpdateExe = () => {
           return { ...pre, progress: percent };
         });
       },
+      discontinueCallback: function () {
+        setDiscontinue(false);
+      },
     });
   };
   const changeExe = () => {
     window.ipcR.ipcChangeExe(stepB, ({ code, result, msg }) => {
+      console.log(`changeExe ${msg}`);
       alert(`changeExe ${msg}`);
       if (code === -1) return;
       setStepList((pre) => {
@@ -74,7 +84,7 @@ const UpdateExe = () => {
     });
   };
   const digitalSignature = () => {
-    window.ipcR.ipcDigitalSignature(stepC, ({ code, result }) => {
+    window.ipcR.ipcDigitalSignature(stepC, (_, { code, result }) => {
       if (code === 0) {
         setStepList((pre) => {
           pre[2].status = "finish";
@@ -138,6 +148,37 @@ const UpdateExe = () => {
     }
   };
 
+  const selectedFilePath = async () => {
+    let selectedMsg = await window.ipcR.ipcDialogOpen({
+      properties: ["openFile"],
+      filters: [
+        {
+          name: "Tracks",
+          extensions: ["zip"],
+        },
+      ],
+    });
+    if (!selectedMsg.canceled) {
+      const [filePath] = selectedMsg.filePaths;
+      console.log(filePath);
+      window.ipcR.ipcExpandArchive({
+        targetPath: filePath,
+        callback: async ({ code, result }) => {
+          alert(`expandArchive ${result}`);
+          setFilePath(filePath);
+          setRcContent(await window.ipcR.ipcGetExeToRc());
+          setStepList((pre) => {
+            pre[0].status = "finish";
+            pre[1].status = "process";
+            return pre.map((item, index) => {
+              return { ...item };
+            });
+          });
+        },
+      });
+    }
+  };
+
   useEffect(() => {
     const list = rcContent.split("\n");
     setRcList(list);
@@ -154,31 +195,30 @@ const UpdateExe = () => {
                 <span>下载资源</span>
                 <span>{stepA.url}</span>
               </div>
-              <div
-                className="input-box"
-                style={{ width: "100%" }}
-                data-label="url: "
-              >
-                <input
-                  type="text"
-                  value={stepA.url}
-                  onChange={(e) => {
-                    console.log(stepA, e.target.value);
-                    setStepA({ ...stepA, url: e.target.value });
-                  }}
-                />
-                <div className="btn" onClick={download}>
-                  download
+              <DProgress progress={stepA.progress}>
+                <div
+                  className="input-box"
+                  style={{ width: "100%" }}
+                  data-label="url: "
+                >
+                  <input
+                    type="text"
+                    value={stepA.url}
+                    onChange={(e) => {
+                      console.log(stepA, e.target.value);
+                      setStepA({ ...stepA, url: e.target.value });
+                    }}
+                  />
+                  <div className="btn" onClick={download}>
+                    download
+                  </div>
                 </div>
-              </div>
-              <div className="progress">
-                <div className="progress-whole">
-                  <div
-                    className="progress-part"
-                    style={{ width: `${stepA.progress}%` }}
-                  ></div>
+              </DProgress>
+              <div className="file-path-box">
+                {Boolean(filePath) && <div className="text">{filePath}</div>}
+                <div className="btn" onClick={selectedFilePath}>
+                  Selected
                 </div>
-                <div className="text">{stepA.progress}%</div>
               </div>
             </div>
           </DStepCardItem>
@@ -221,10 +261,14 @@ const UpdateExe = () => {
             </div>
           </DStepCardItem>
           <DStepCardItem>
-            <div className="img-box" onClick={changeStepC}>
-              {stepC.signaturePath}
+            <div className="file-path-box">
+              {Boolean(stepC.signaturePath) && (
+                <div className="text">{stepC.signaturePath}</div>
+              )}
+              <div className="btn" onClick={changeStepC}>
+                Selected
+              </div>
             </div>
-
             <div
               className="input-box"
               style={{ width: "100%" }}
@@ -275,9 +319,22 @@ const UpdateExe = () => {
               </div>
             </div>
           </DStepCardItem>
+
+          <Loadding isLoading={true}></Loadding>
         </DStepCard>
+        <i className="setting-box"></i>
       </div>
     </>
+  );
+};
+const Loadding = (props) => {
+  const { isLoading, msg, children } = props;
+  return (
+    Boolean(isLoading) && (
+      <div className="loadding">
+        <div className="loadding-item">{children ?? Loadding}</div>
+      </div>
+    )
   );
 };
 

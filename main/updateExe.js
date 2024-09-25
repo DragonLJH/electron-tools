@@ -5,34 +5,43 @@ const { HttpsProxyAgent } = require("https-proxy-agent");
 const fs = require("fs");
 const logging = require("electron-log");
 const path = require("path");
+const { deleteFolderRecursive, getProxyAddress } = require("./commonFn");
 const assetsPath =
   process.env.NODE_ENV === "production"
     ? path.resolve(process.resourcesPath, "assets")
     : path.join(__dirname, "../assets");
 
+const proxySelf = getProxyAddress();
 class UpdateExe {
   electronDownloadPath;
   rcFilePath;
-  proxyUrl = "http://127.0.0.1:7890";
-  _agent = new HttpsProxyAgent(this.proxyUrl);
+  proxyUrl;
+  // proxyUrl;
   signtoolPath = path.join(assetsPath, "exe", "signtool.exe");
+  pythonPath = path.join(assetsPath, "exe", "python/python37.dll");
   constructor() {}
   init() {
     ipcMain.on("ipc-got-download", async (event, data) => {
-      logging.log("ipc-got-download", this._agent);
+      this.checkProxy();
+      if (!this.proxyUrl) {
+        event.reply("download-res", { code: -1, result: "failure" });
+        return;
+      }
+      logging.log("ipc-got-download", this.proxyUrl);
       const gotModule = await import("got");
       const got = gotModule.default;
       const { url, isStream, isProgress } = data;
       const streamData = [];
       const downloadName = url.split("/").slice(-1)[0];
       const downloadPath = path.join(assetsPath, "downloads", downloadName);
-      const downloadStream = got(url, {
+      const options = {
         isStream: isStream ?? false,
         agent: {
-          http: this._agent,
-          https: this._agent,
+          http: new HttpsProxyAgent(this.proxyUrl),
+          https: new HttpsProxyAgent(this.proxyUrl),
         },
-      });
+      };
+      const downloadStream = got(url, options);
 
       // const fileStream = fs.createWriteStream(downloadPath);
       // downloadStream.pipe(fileStream);
@@ -59,10 +68,11 @@ class UpdateExe {
         const buffer = Buffer.concat(streamData);
         fs.writeFileSync(downloadPath, buffer);
         await this.expandArchive(downloadPath);
-        event.reply("download-success");
+        event.reply("download-res", { code: 0, result: "success" });
       });
       downloadStream.once("error", (error) => {
         logging.log("error", error);
+        event.reply("download-res", { code: -1, result: "failure" });
       });
     });
 
@@ -95,9 +105,9 @@ class UpdateExe {
     [FILENAMES]
     Exe=       "${electron}"
     SaveAs=    "${electron}"
-    Log=    "${MyProg_Rus}"
+    Log=       "${MyProg_Rus}"
     [COMMANDS]
-    -addoverwrite    "${iconPath}", ICONGROUP, 1
+    ${Boolean(iconPath) && `-addoverwrite    "${iconPath}", ICONGROUP, 1`}
     -addoverwrite    "${this.rcFilePath.replace(".rc", ".res")}", VERSIONINFO, 1
     `;
       fs.writeFileSync(ScriptPath, ScriptContent, "utf-8");
@@ -109,7 +119,9 @@ class UpdateExe {
           code: 0,
           result: "success",
           // msg: "success",
-          msg: fs.readFileSync(MyProg_Rus, "utf-8").toString(),
+          msg: fs
+            .readFileSync(MyProg_Rus, "utf-8")
+            .replace(/[^\x20-\x7E\n]/g, ""),
         });
       } catch (error) {
         event.reply("change-exe-res", {
@@ -118,6 +130,12 @@ class UpdateExe {
           msg: error.message,
         });
         logging.error(error);
+      } finally {
+        // 删除临时文件
+        fs.unlinkSync(ScriptPath);
+        fs.unlinkSync(MyProg_Rus);
+        fs.unlinkSync(this.rcFilePath);
+        fs.unlinkSync(this.rcFilePath.replace(".rc", ".res"));
       }
     });
     ipcMain.on(
@@ -175,12 +193,25 @@ class UpdateExe {
     ipcMain.on("ipc-wvp-signature", (event, { accountName, password }) => {
       try {
         this.checkPythonWvp();
-        const scriptPath = path.join(assetsPath, "exe/wvp.py");
+        const exePath = path.join(assetsPath, "exe/python/wvp.exe");
 
-        const command = `python "${scriptPath}" ${accountName} ${password} "${this.electronDownloadPath}"`;
+        const command = `"${exePath}" ${accountName} ${password} "${this.electronDownloadPath}"`;
         logging.log("wvp signature command:", command);
         const result = execSync(command, { encoding: "utf8" });
         logging.log("wvp signature success result:", result);
+        const electronPathFn = (targetPath) =>
+          path.join(this.electronDownloadPath, targetPath);
+        fs.copyFileSync(
+          electronPathFn("electron.exe"),
+          electronPathFn("../electron.exe")
+        );
+        fs.copyFileSync(
+          electronPathFn("electron.exe.sig"),
+          electronPathFn("../electron.exe.sig")
+        );
+
+        // deleteFolderRecursive(this.electronDownloadPath);
+
         event.reply("wvp-signature-res", {
           code: 0,
           result: "success",
@@ -193,9 +224,26 @@ class UpdateExe {
         });
       }
     });
+    ipcMain.on("ipc-expand-archive", async (event, targetPath) => {
+      try {
+        await this.expandArchive(targetPath);
+        event.reply("expand-archive-res", { code: 0, result: "success" });
+      } catch (error) {
+        event.reply("expand-archive-res", { code: -1, result: "failure" });
+      }
+    });
+  }
+  checkProxy() {
+    const { ip, port } = getProxyAddress() ?? { ip: "", port: "" };
+    if (ip && port) {
+      this.proxyUrl = `http://${ip}:${port}`;
+    } else {
+      this.proxyUrl = undefined;
+    }
   }
   expandArchive = (zipPath) => {
     this.electronDownloadPath = zipPath.replace(".zip", "");
+    console.log("electronDownloadPath", this.electronDownloadPath);
     return new Promise((resolve, reject) => {
       const command = `Expand-Archive -Path "${zipPath}" -DestinationPath "${this.electronDownloadPath}"`;
       const powershell = spawn("powershell.exe", ["-Command", command]);

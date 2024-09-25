@@ -4,19 +4,18 @@ export const getID = () => {
   return id++;
 };
 
-var str = "abcdefghijkmnpqrstuvwxyABCDEFGHIJLMNOPQRSTUVWXYZ123456789";
 // 随机字符
-export const randomStr = (num) => {
-  let res = new Array(num).fill(null).map((_) => {
-    let index = Math.round(Math.random() * (str.length - 1));
-    return str[index];
-  });
-  return res;
+export const randomStr = (length) => {
+  let str = Math.random().toString(36).slice(2);
+  if (str.length < length) {
+    // 如果生成的随机字符串长度小于需求长度，递归调用自身来补充
+    return str + randomStr(length - str.length);
+  } else {
+    return str.slice(0, length);
+  }
 };
 // 随机颜色
-export const randomColor = () => {
-  return "#" + Math.random().toString(16).slice(2, 8);
-};
+export const randomColor = () => "#" + Math.random().toString(16).slice(2, 8);
 // 验证码 画板
 export const codeCanvas = (el, num = 4) => {
   var str = randomStr(num);
@@ -63,3 +62,5 @@ export const stringToXML = (xmlString) => {
   let xmlObject = parser.parseFromString(xmlString, "text/xml");
   return xmlObject;
 };
+
+
