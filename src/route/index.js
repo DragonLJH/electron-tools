@@ -1,5 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { connect, useSelector } from "react-redux";
 import { HashRouter as Router, Route, Redirect } from "react-router-dom";
+import { useSynchronous } from "@src/utils/useHooks";
+
+export const IS_SHOW_MENU = true;
 
 // 动态加载view根目录下的路由组件
 const requireViewRoutes = require.context("../view", true, /index.(jsx|js)$/);
@@ -8,10 +12,12 @@ const requireViewPages = require.context("../view", true, /page.(jsx|js)$/);
 export const viewRoutes = requireViewRoutes
   .keys()
   .map((item) => {
-    const pageMate = requireViewPages(
-      item.replace("index.js", "page.js")
-    ).default;
-    const { isCreate, isMenu } = pageMate.winOp;
+    const [reg] = item.match(/index\.(jsx|js)$/);
+    const pageMate = requireViewPages(item.replace(reg, "page.js")).default;
+    // isCreate 是否创建窗口
+    // isMenu 是否显示菜单
+    // redirectPath 重定向路径
+    const { isCreate, isMenu, redirectPath } = pageMate.winOp;
     let name = item.replace(/^\.\//, "").replace(/\/index.(jsx|js)$/, "");
     if (isCreate && name.indexOf("/") > -1) {
       name = name.split("/");
@@ -30,6 +36,7 @@ export const viewRoutes = requireViewRoutes
       path: `/${name}`,
       mate: pageMate,
       isMenu,
+      redirectPath,
     };
   })
   .filter((item) => item.name.indexOf("/") == -1);
@@ -41,7 +48,7 @@ const requireHomeViewRoutes = require.context(
   /index.(jsx|js)$/
 );
 
-// 动态加载view根目录下的page.js信息
+// 动态加载HomeView根目录下的page.js信息
 const requireHomeViewPages = require.context(
   "../view/HomeView",
   true,
@@ -51,9 +58,8 @@ const requireHomeViewPages = require.context(
 export const homeViewRoutes = requireHomeViewRoutes
   .keys()
   .map((item) => {
-    const pageMate = requireHomeViewPages(
-      item.replace("index.js", "page.js")
-    ).default;
+    const [reg] = item.match(/index\.(jsx|js)$/);
+    const pageMate = requireHomeViewPages(item.replace(reg, "page.js")).default;
     const name = item.replace(/^\.\//, "").replace(/\/?index.(jsx|js)$/, "");
     return {
       name,
@@ -94,41 +100,55 @@ export const HomeViewComponent = () => {
 };
 
 // 根路由组件
-const MyComponent = (props) => {
-  const { children } = props;
-  const [routes, setRoutes] = useState(viewRoutes);
-
-  const addRoute = () => {
-    const newRoute = {
-      path: "/dynamic",
-      component: () => <div>Dynamic Route</div>,
-    };
-    setRoutes([...routes, newRoute]);
-  };
+const MainRouter = (props) => {
+  const { children, init } = props;
+  const routes = useSelector((state) => state.routes);
+  // const [routes, setRoutes] = useState(viewRoutes);
+  useEffect(() => {
+    init(viewRoutes);
+  });
 
   return (
     <>
       <Router>
         {children}
         <div className="app-main">
-          {/* 重定向登录页 */}
-          <Route exact path="/">
-            <Redirect to="/HomeView/UpdateExe" />
-          </Route>
-          {/* 路由配置 */}
-          {routes.map((route, index) => {
-            return (
-              <DynamicRoute
-                key={index}
-                path={route.path}
-                component={route.component}
-              />
-            );
-          })}
+          {Boolean(routes) && (
+            <>
+              {/* 重定向登录页 */}
+              <Route exact path="/">
+                <Redirect to="/HomeView" />
+              </Route>
+              {/* 路由配置 */}
+              {routes.map((route, index) => {
+                return (
+                  <DynamicRoute
+                    key={index}
+                    path={route.path}
+                    component={route.component}
+                  />
+                );
+              })}
+              {routes
+                .filter(({ redirectPath }) => redirectPath)
+                .map(({ path, redirectPath }, index) => {
+                  return (
+                    <Route key={`redirect-${path}`} exact path={path}>
+                      <Redirect to={`${path}${redirectPath}`} />
+                    </Route>
+                  );
+                })}
+            </>
+          )}
         </div>
       </Router>
     </>
   );
 };
 
-export default MyComponent;
+// 映射 dispatch 到组件的 props
+const mapDispatchToProps = useSynchronous((dispatch) => ({
+  init: (data) => dispatch({ type: "ROUTE_INIT_ACTION", data }),
+}));
+
+export default connect(null, mapDispatchToProps)(MainRouter);

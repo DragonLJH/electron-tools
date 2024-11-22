@@ -149,9 +149,9 @@ class UpdateExe {
         const signOptions = [
           "sign",
           "/f",
-          signaturePath ?? "D:\\sign\\Yian Technology (Shenzhen) Co., Ltd..pfx", // 证书文件路径
+          signaturePath || "D:\\sign\\Yian Technology (Shenzhen) Co., Ltd..pfx", // 证书文件路径
           "/p",
-          signaturePwd ?? "yian22()", // 证书密码
+          signaturePwd || "yian22()", // 证书密码
           "/t",
           "http://timestamp.digicert.com", // 时间戳 URL
           "/fd",
@@ -159,6 +159,10 @@ class UpdateExe {
           electron, // 需要签名的文件路径
         ];
 
+        console.log(
+          "--- signProcess",
+          `${this.signtoolPath} ${signOptions.join(" ")}`
+        );
         // 启动 `signtool` 命令
         const signProcess = spawn(this.signtoolPath, signOptions, {
           env: process.env,
@@ -171,6 +175,10 @@ class UpdateExe {
 
         signProcess.stderr.on("data", (data) => {
           logging.error(`stderr: ${data}`);
+          event.reply("digital-signature-res", {
+            code: 1,
+            result: "failure",
+          });
         });
 
         signProcess.on("close", (code) => {

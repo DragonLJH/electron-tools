@@ -1,5 +1,4 @@
 const { contextBridge, ipcRenderer } = require("electron");
-
 contextBridge.exposeInMainWorld("ipcR", {
   ipcMaximize: (routePath) => {
     ipcRenderer.send("ipc-maximize", routePath);
@@ -54,11 +53,21 @@ contextBridge.exposeInMainWorld("ipcR", {
     });
   },
   ipcDigitalSignature: ({ signaturePath, signaturePwd }, callback) => {
-    ipcRenderer.send("ipc-digital-signature", { signaturePath, signaturePwd });
+    console.log("[ipcDigitalSignature { signaturePath, signaturePwd }]", {
+      signaturePath,
+      signaturePwd,
+    });
+    ipcRenderer.send("ipc-digital-signature", {
+      signaturePath: signaturePath.value,
+      signaturePwd: signaturePwd.value,
+    });
     ipcRenderer.on("digital-signature-res", callback);
   },
   ipcWvpSignature: ({ accountName, password }, callback) => {
-    ipcRenderer.send("ipc-wvp-signature", { accountName, password });
+    ipcRenderer.send("ipc-wvp-signature", {
+      accountName: accountName.value,
+      password: password.value,
+    });
     ipcRenderer.on("wvp-signature-res", (event, { code, result }) => {
       callback({ code, result });
     });
@@ -69,6 +78,27 @@ contextBridge.exposeInMainWorld("ipcR", {
       callback({ code, result });
     });
   },
+
+  ipcEnv: () => ipcRenderer.invoke("ipc-get-env"),
+
+  getState: () =>
+    new Promise((resolve) => {
+      ipcRenderer.once("state-response", (event, { state }) => {
+        resolve({ state });
+      });
+      ipcRenderer.send("get-state");
+    }),
+
+  dispatchAction: (action) => ipcRenderer.send("dispatch-action", action),
+  onStoreUpdated: (callback) => {
+    ipcRenderer.on("store-updated", (event, action) => {
+      callback(action);
+    });
+  },
+  onInitializeState: (callback) =>
+    ipcRenderer.on("initialize-state", (event, initialState) =>
+      callback(initialState)
+    ),
 });
 
 contextBridge.exposeInMainWorld("versions", {

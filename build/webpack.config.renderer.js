@@ -1,5 +1,4 @@
 const path = require("path");
-
 const { merge } = require("webpack-merge");
 const baseConfig = require("./webpack.config.base");
 const HtmlWebpackPlugin = require("html-webpack-plugin");
@@ -34,8 +33,17 @@ const rendererConfig = {
       },
     ],
   },
+  resolve: {
+    alias: {
+      "@src": path.resolve(__dirname, "../src"),
+      "@main": path.resolve(__dirname, "../main"),
+      "@assets": path.resolve(__dirname, "../assets"),
+    },
+    extensions: [".js", ".jsx"],
+  },
 };
 if (NODE_ENV === "development") {
   rendererConfig.devtool = "source-map";
 }
 module.exports = merge(baseConfig, rendererConfig);
+// module.exports = rendererConfig;

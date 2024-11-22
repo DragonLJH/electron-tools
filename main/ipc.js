@@ -1,10 +1,14 @@
 const { createwin, URL } = require("./mainWindow");
 const { app, ipcMain, dialog } = require("electron");
 const { updateExe } = require("./updateExe");
+const { initStore } = require("./initStore");
 const { deleteFolderRecursive } = require("./commonFn");
 
 const fs = require("fs");
+let _$store = [];
 const ipcFun = (win, winList) => {
+  initStore.init();
+
   ipcMain.on("ipc-maximize", (_, routePath) => {
     winList.get(routePath).maximize();
   });
@@ -48,9 +52,12 @@ const ipcFun = (win, winList) => {
   );
   ipcMain.handle("ipc-appPath", (_) => app.getAppPath());
   ipcMain.on("ipc-createwin", (_, { winKey, routeOp, routePath }) => {
+    const { state } = initStore;
+    console.log("[ipc-createwin state]", state);
     let win = createwin(
       { routeOp, parent: winList.get("Home") },
-      `${URL}#${routePath}`
+      `${URL}#${routePath}`,
+      state
     );
     win.id = winKey;
     console.log("ipc-createwin-key:", winKey);
@@ -60,7 +67,10 @@ const ipcFun = (win, winList) => {
   ipcMain.on("ipc-delete-folder", (_, targetPath) => {
     deleteFolderRecursive(targetPath);
   });
+
   updateExe.init();
+
+  ipcMain.handle("ipc-get-env", () => JSON.stringify(process.env));
 };
 
 module.exports = { ipcFun };

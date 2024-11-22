@@ -23,11 +23,12 @@ export const codeCanvas = (el, num = 4) => {
   ctx.fillStyle = randomColor();
   ctx.fillRect(0, 0, 25 * num, 30);
   ctx.font = "30px Arial";
-  str.forEach((item, index) => {
+  console.log("codeCanvas", str);
+  str.split("").forEach((item, index) => {
     ctx.fillStyle = randomColor();
     ctx.fillText(item, 16 * (index + 1), 25);
   });
-  return str.join("");
+  return str;
 };
 
 // 防抖
@@ -62,5 +63,3 @@ export const stringToXML = (xmlString) => {
   let xmlObject = parser.parseFromString(xmlString, "text/xml");
   return xmlObject;
 };
-
-

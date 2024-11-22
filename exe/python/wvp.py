@@ -11,4 +11,4 @@ if __name__ == "__main__":
     # 调用 reauth 方法
     account_instance.reauth(arg1, arg2)
     vmp_instance = vmp.VMP()
-    vmp_instance.sign_pkg(arg3)
+    vmp_instance.sign_pkg(pkg=arg3, passwd=arg2)

@@ -12,16 +12,19 @@ export const DStepCard = (props) => {
   const { w, h, stepList, children } = props;
   const providerStyle = { "--w": `${w ?? 300}px`, "--h": `${h ?? 220}px` };
   const [activeStepIndex, setActiveStepIndex] = useState(0);
-
+  const [maskVisible, setMaskVisible] = useState(false);
   const handleClick = (res) => {
     if (res === "prev") setActiveStepIndex(activeStepIndex - 1);
     if (res === "next") setActiveStepIndex(activeStepIndex + 1);
   };
 
+  const handMaskClick = (value) => setMaskVisible(value);
+
   // 克隆每个子元素并添加点击事件和自定义属性
   const clonedChildren = React.Children.map(children, (child, index) => {
     return React.cloneElement(child, {
       handleClick,
+      handMaskClick,
       stepIndex: index,
       activeStepIndex,
       status: stepList?.[index]?.status,
@@ -49,19 +52,41 @@ export const DStepCard = (props) => {
     // <MyContext.Provider value={{ activeStepIndex }}>
     <div className="d-step-card" style={providerStyle}>
       <div className="step-bar">{stepBar}</div>
-      <div className="step-main">{clonedChildren}</div>
+      <div className="step-main">
+        {clonedChildren}
+        {maskVisible && <DMask></DMask>}
+      </div>
     </div>
     // </MyContext.Provider>
   );
 };
 
+const DMask = (props) => {
+  return (
+    <div className="d-mask">
+      <div className="loader"></div>
+    </div>
+  );
+};
+
 export const DStepCardItem = (props) => {
   // const { activeStepIndex } = useContext(MyContext);
-  const { children, stepIndex, activeStepIndex, status, handleClick } = props;
-  
+  const {
+    children,
+    stepIndex,
+    activeStepIndex,
+    status,
+    handleClick,
+    handMaskClick,
+    mask,
+  } = props;
+
   useEffect(() => {
     console.log("DStepCardItem props", props);
   }, [activeStepIndex]);
+  useEffect(() => {
+    handMaskClick(mask);
+  }, [mask]);
   return (
     stepIndex === activeStepIndex && (
       <div className={`d-step-card-item ${status ?? ""}`}>

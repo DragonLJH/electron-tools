@@ -1,5 +1,6 @@
 const { BrowserWindow, ipcMain } = require("electron");
 const path = require("path");
+const { initialState } = require("../store/reducer/index.js");
 const { NODE_ENV, host, port } = process.env;
 const URL = `http://${host}:${port}/`;
 const isDevelopment = NODE_ENV === "development";
@@ -46,8 +47,8 @@ const HOME_WIN_OPTIONS = {
   titleBarStyle: "hidden",
   trafficLightPosition: { x: 10, y: 23 },
 };
-const initWin = () => createwin(HOME_WIN_OPTIONS, URL);
-const createwin = (winOp, url) => {
+const initWin = () => createwin(HOME_WIN_OPTIONS, URL, initialState);
+const createwin = (winOp, url, initialState) => {
   console.log("createwin", url);
   let win = new BrowserWindow(mergeObj(DEFAULT_WINDOW_OPTIONS, winOp));
   if (isDevelopment) {
@@ -64,10 +65,14 @@ const createwin = (winOp, url) => {
     win.show();
   });
 
+  // 将当前状态传递给新窗口
+  win.webContents.on("did-finish-load", () => {
+    initialState && win.webContents.send("initialize-state", initialState);
+  });
+
   // 监听拖拽事件
   win.webContents.on("will-navigate", (e, url) => {
     e.preventDefault();
-    console.log("拖拽文件:", url);
   });
 
   return win;

@@ -1,6 +1,6 @@
 import ReactDOM from "react-dom";
 import React from "react";
-import App from '@src/app/App'; 
+import App from '@src/app/App';
 // 左边工具栏以及编辑节点的样式
 // import 'bpmn-js/dist/assets/diagram-js.css'
 // import 'bpmn-js/dist/assets/bpmn-font/css/bpmn.css'

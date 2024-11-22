@@ -77,10 +77,12 @@ const startRenderer = async () => {
     }
   });
 };
-
+const isObject = (target) =>
+  Object.prototype.toString.call(target) === "[object Object]";
 (async () => {
-  Object.entries(devServerOptions).forEach(([key, value]) => {
-    process.env[key] = value;
+  Object.entries(devServerOptions).forEach(([key, val]) => {
+    if (isObject(val)) process.env[key] = JSON.stringify(val);
+    else process.env[key] = val;
   });
   startMain();
   await startRenderer();

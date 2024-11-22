@@ -36,29 +36,33 @@ const DMenu = (props) => {
         ></div>
       )}
       {items &&
-        items.map((item, index) => {
-          return (
-            <div
-              key={item.key}
-              className={`d-menu-item ${pathname == item.key ? "active" : ""}`}
-              onClick={() => itemClick(index, item)}
-            >
-              <DTitle title={`${item.label}`} {...{ ...titleXY, isActive }}>
-                <div
-                  className="d-menu-item-icon"
-                  onMouseEnter={(e) => mouseEnter(e)}
-                >
-                  {item.label.slice(0, 1)}
-                </div>
-              </DTitle>
-              {isActive || (
-                <div className="d-menu-item-label" title={item.label}>
-                  {item.label}
-                </div>
-              )}
-            </div>
-          );
-        })}
+        items
+          .filter(({ mate }) => mate.winOp?.isHomeMenu ?? true)
+          .map((item, index) => {
+            return (
+              <div
+                key={item.key}
+                className={`d-menu-item ${
+                  pathname == item.key ? "active" : ""
+                }`}
+                onClick={() => itemClick(index, item)}
+              >
+                <DTitle title={`${item.label}`} {...{ ...titleXY, isActive }}>
+                  <div
+                    className="d-menu-item-icon"
+                    onMouseEnter={(e) => mouseEnter(e)}
+                  >
+                    {item.label.slice(0, 1)}
+                  </div>
+                </DTitle>
+                {isActive || (
+                  <div className="d-menu-item-label" title={item.label}>
+                    {item.label}
+                  </div>
+                )}
+              </div>
+            );
+          })}
     </div>
   );
 };

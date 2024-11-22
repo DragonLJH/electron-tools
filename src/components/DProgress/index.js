@@ -10,7 +10,7 @@ export const DProgress = (props) => {
         <div className="whole">
           <div className="part" style={{ width: `${progress}%` }}></div>
         </div>
-        <div className="text">{progress}%</div>
+        {Boolean(progress) && <div className="text">{progress}%</div>}
       </div>
     </div>
   );
