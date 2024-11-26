@@ -191,16 +191,14 @@
   line-height: 40px;
   text-align: center;
   border-radius: 10px;
-  background: 10px / 15% no-repeat url(@assets/imgs/buy.svg),
-    linear-gradient(90deg, #ee3e3e 0%, #df3838 100%);
+  background: linear-gradient(90deg, #ee3e3e 0%, #df3838 100%);
   color: #fff;
   font-size: 16px;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
   &:hover {
-    background: 10px / 15% no-repeat url(@assets/imgs/buy.svg),
-      linear-gradient(90deg, #ee883e 0%, #df3838 100%);
+    background: linear-gradient(90deg, #ee883e 0%, #df3838 100%);
   }
   &.bf-box {
     position: relative;

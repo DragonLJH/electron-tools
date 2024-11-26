@@ -1,0 +1,12 @@
+{
+    "name": "electron-react-base",
+    "version": "1.0.0",
+    "build": {
+        "appId": "com.example.my-electron-app",
+        "productName": "My Electron App",
+        "directories": {
+            "output": "release/erb",
+            "buildResources": "build"
+        }
+    }
+}

@@ -58,9 +58,9 @@ const HomeView = () => {
     <>
       <div className="home-view">
         <div className="home-view-left">
-          {IS_SHOW_MENU && routes && (
-            <DMenu items={routes} onClick={menuClick} />
-          )}
+          {(process.env.BUILD_MEMU ?? "true") === "true" &&
+            IS_SHOW_MENU &&
+            routes && <DMenu items={routes} onClick={menuClick} />}
           {/* {routes && (
             <Menu
               defaultSelectedKeys={pathname}

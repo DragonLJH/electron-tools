@@ -10,7 +10,7 @@ const App = () => {
   const [store, setStore] = useState(null);
   useEffect(() => {
     // 接收初始化状态
-    window.ipcR.onInitializeState((initialState) => {
+    window.ipcR?.onInitializeState((initialState) => {
       const newStore = createStore(
         rootReducer,
         initialState,
@@ -19,7 +19,7 @@ const App = () => {
       newStore.uniqueIdentifier = Math.random().toString(36).substring(7);
       setStore(newStore);
     });
-    window.ipcR.onStoreUpdated((action) => {
+    window.ipcR?.onStoreUpdated((action) => {
       setStore((prevStore) => {
         prevStore.dispatch(action);
         return prevStore;

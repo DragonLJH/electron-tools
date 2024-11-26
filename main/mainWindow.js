@@ -1,4 +1,5 @@
 const { BrowserWindow, ipcMain } = require("electron");
+const logging = require("electron-log");
 const path = require("path");
 const { initialState } = require("../store/reducer/index.js");
 const { NODE_ENV, host, port } = process.env;
@@ -54,15 +55,24 @@ const createwin = (winOp, url, initialState) => {
   if (isDevelopment) {
     win.loadURL(url);
   } else {
-    const entryPath = path.resolve(__dirname, "../../dist/renderer/index.html");
-    win.loadFile(entryPath);
+    let routePath;
+    if (url.includes("#")) {
+      [_, routePath] = url.split("#");
+    }
+    const entryPath = `file://${path.join(
+      __dirname,
+      "../../dist/renderer/index.html"
+    )}#${routePath ?? ""}`;
+    logging.log("[createwin entryPath]", entryPath);
+    win.loadURL(entryPath);
   }
 
   // 打开开发者工具栏，默认不打开
-  win.webContents.openDevTools();
+  // win.webContents.openDevTools();
 
   win.once("ready-to-show", () => {
     win.show();
+    if (NODE_ENV === "development") win.webContents.openDevTools();
   });
 
   // 将当前状态传递给新窗口

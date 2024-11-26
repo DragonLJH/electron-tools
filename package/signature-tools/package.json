@@ -1,0 +1,12 @@
+{
+    "name": "signature-tools",
+    "version": "1.0.0",
+    "build": {
+        "appId": "com.example.signature-tools",
+        "productName": "Signature Tools",
+        "directories": {
+            "output": "release/st",
+            "buildResources": "build"
+        }
+    }
+}

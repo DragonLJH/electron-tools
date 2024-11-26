@@ -5,13 +5,23 @@ import { useSynchronous } from "@src/utils/useHooks";
 
 export const IS_SHOW_MENU = true;
 
+const buildFilter = (item) => {
+  let name = item.replace(/^\.\//, "").replace(/\/index.(jsx|js)$/, "");
+  return (
+    // process.env.NODE_ENV === "development" ||
+    process.env.BUILD_VIEWS ? process.env.BUILD_VIEWS.includes(name) : true
+  );
+};
+
 // 动态加载view根目录下的路由组件
 const requireViewRoutes = require.context("../view", true, /index.(jsx|js)$/);
 // 动态加载view根目录下的page.js信息
 const requireViewPages = require.context("../view", true, /page.(jsx|js)$/);
 export const viewRoutes = requireViewRoutes
   .keys()
+  .filter(buildFilter)
   .map((item) => {
+    console.log("[viewRoutes]", item);
     const [reg] = item.match(/index\.(jsx|js)$/);
     const pageMate = requireViewPages(item.replace(reg, "page.js")).default;
     // isCreate 是否创建窗口
@@ -57,6 +67,7 @@ const requireHomeViewPages = require.context(
 
 export const homeViewRoutes = requireHomeViewRoutes
   .keys()
+  .filter(buildFilter)
   .map((item) => {
     const [reg] = item.match(/index\.(jsx|js)$/);
     const pageMate = requireHomeViewPages(item.replace(reg, "page.js")).default;

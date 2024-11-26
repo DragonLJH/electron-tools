@@ -29,7 +29,6 @@ class InitStore {
     // 处理来自渲染进程的 action 请求
     ipcMain.on("dispatch-action", (event, action) => {
       this._sederWin = BrowserWindow.fromWebContents(event.sender);
-      console.log("[dispatch-action action]", action);
       this._action = action;
       store.dispatch(action);
     });
