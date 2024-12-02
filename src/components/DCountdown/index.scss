@@ -1,0 +1,122 @@
+@mixin flex {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.d-countdown {
+  perspective: 1000px; // 设置透视效果
+  .wrapper {
+    @include flex;
+    gap: 10px;
+  }
+  .bg {
+    --infinite: infinite;
+    position: relative;
+    width: 60px; // 设置宽度
+    height: 80px; // 设置高度
+    border-radius: 10px;
+    background: top / 100% 49% no-repeat linear-gradient(to bottom, #999, #999),
+      bottom/ 100% 49% no-repeat linear-gradient(to bottom, #999, #999);
+    color: #fff; // 字体颜色
+    font-size: 3rem; // 字体大小
+  }
+
+  .d-mask {
+    // 原有的背景遮罩样式
+  }
+
+  .loader {
+    // 原有的加载效果样式
+  }
+  .flipping-box {
+    position: relative;
+    width: 60px; // 设置宽度
+    height: 60px; // 设置高度
+    // @include flex;
+    border-radius: 10px;
+    .item {
+      border-radius: 10px;
+      position: absolute;
+      top: 0;
+      left: 0;
+      font-size: 36px;
+      width: 100%;
+      height: 50%;
+      line-height: calc(10% - 5px);
+      overflow: hidden;
+      backface-visibility: hidden;
+      @include flex;
+      transition: transform 1s linear;
+      &:nth-child(1),
+      &:nth-child(3) {
+        align-items: flex-end;
+        background-color: var(--b-c1);
+      }
+      &:nth-child(2),
+      &:nth-child(4) {
+        top: 50%;
+        align-items: flex-start;
+        background-color: var(--b-c2);
+      }
+      &:nth-child(1) {
+        left: 0;
+        z-index: 0;
+      }
+      &:nth-child(2) {
+        z-index: 1;
+        transform-origin: center top;
+        --a1: -180deg;
+        transform: rotateX(var(--a1));
+      }
+      &:nth-child(3) {
+        z-index: 2;
+        transform-origin: center bottom;
+        --a1: 0;
+        transform: rotateX(var(--a1));
+      }
+      &:nth-child(4) {
+        z-index: 3;
+      }
+    }
+    &.flipping {
+      --time: 1s;
+      .item {
+        &:nth-child(1) {
+          --z-i: 3;
+          animation: flipping var(--time) linear forwards;
+        }
+        &:nth-child(2) {
+          --z-i: 2;
+          --a1: -180deg;
+          --a2: -90deg;
+          --a3: 0;
+          animation: flipping var(--time) linear forwards;
+        }
+        &:nth-child(3) {
+          --z-i: 1;
+          --a1: 0;
+          --a2: 90deg;
+          --a3: 180deg;
+          animation: flipping var(--time) linear forwards;
+        }
+        &:nth-child(4) {
+          --z-i: 0;
+          animation: flipping var(--time) linear forwards;
+        }
+      }
+    }
+    @keyframes flipping {
+      0% {
+        transform: rotateX(var(--a1));
+      }
+      50% {
+        transform: rotateX(var(--a2));
+      }
+      100% {
+        z-index: var(--z-i);
+        transform: rotateX(var(--a3));
+      }
+    }
+  }
+}
