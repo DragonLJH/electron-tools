@@ -27,22 +27,33 @@ export const viewRoutes = requireViewRoutes
     // isCreate 是否创建窗口
     // isMenu 是否显示菜单
     // redirectPath 重定向路径
-    const { isCreate, isMenu, redirectPath } = pageMate.winOp;
+    const { winOp: { isCreate, isMenu, redirectPath }, dispatchOp } = pageMate;
     let name = item.replace(/^\.\//, "").replace(/\/index.(jsx|js)$/, "");
     if (isCreate && name.indexOf("/") > -1) {
       name = name.split("/");
       name = name[name.length - 1];
     }
+
+    let component = requireViewRoutes(item).default // 映射 dispatch 到组件的 props
+
+    const mapDispatchToProps = useSynchronous((dispatch) => (
+      dispatchOp?.reduce((acc, type) => {
+        let key = type.split('_').map((item, index) => index === 0 ? item.toLocaleLowerCase() : item.charAt(0).toUpperCase() + item.slice(1).toLocaleLowerCase()).join('')
+        acc[key] = (data) => dispatch({ type: type, data });
+        return acc
+      }, {})) ?? {}
+    );
+    component = connect(null, mapDispatchToProps)(component);
     console.log({
       name,
-      component: requireViewRoutes(item).default,
+      component,
       path: `/${name}`,
       mate: pageMate,
     });
     console.log("----------");
     return {
       name,
-      component: requireViewRoutes(item).default,
+      component,
       path: `/${name}`,
       mate: pageMate,
       isMenu,
@@ -65,6 +76,7 @@ const requireHomeViewPages = require.context(
   /page.(jsx|js)$/
 );
 
+
 export const homeViewRoutes = requireHomeViewRoutes
   .keys()
   .filter(buildFilter)
@@ -72,9 +84,11 @@ export const homeViewRoutes = requireHomeViewRoutes
     const [reg] = item.match(/index\.(jsx|js)$/);
     const pageMate = requireHomeViewPages(item.replace(reg, "page.js")).default;
     const name = item.replace(/^\.\//, "").replace(/\/?index.(jsx|js)$/, "");
+    let component = requireHomeViewRoutes(item).default
+    console.log(`"[homeViewRoutes] ${name}"`, component);
     return {
       name,
-      component: requireHomeViewRoutes(item).default,
+      component,
       path: `/${name}`,
       mate: pageMate,
     };

@@ -14,7 +14,7 @@ const DInputBox = (props) => {
 
   const btnClick = async () => {
     let { canceled, filePaths } = await window.ipcR.ipcDialogOpen({
-      properties: ["openFile"],
+      properties: ["openFile", ...[extensions ?? "openDirectory"]],
       filters: [
         {
           name: "Tracks",

@@ -6,10 +6,11 @@ import { DProgress } from "@src/components";
 
 import { useSynchronous } from "@src/utils/useHooks";
 import { connect, useSelector } from "react-redux";
+import { useLocalStorageState } from "ahooks";
 
 import "./index.scss";
 const UpdateExe = (props) => {
-  const { ipcCreateWin, changeStepArray } = props;
+  const { ipcCreateWin, changeStepArray, changeConfiguration } = props;
   const stepArray = useSelector((state) => state.stepArray);
   const configuration = useSelector((state) => state.configuration);
   const [rcContent, setRcContent] = useState("");
@@ -24,6 +25,10 @@ const UpdateExe = (props) => {
       };
     })
   );
+
+  const [config, setConfig] = useLocalStorageState("config", {
+    defaultValue: {},
+  });
   const updateStepArray = (step, index = 0) => {
     stepArray.splice(index, 1, { ...stepArray[index], ...step });
     changeStepArray([...stepArray.map((item) => item)]);
@@ -119,7 +124,9 @@ const UpdateExe = (props) => {
       });
     });
   };
-
+  useEffect(() => {
+    console.log("[UpdateExe props]", props);
+  }, []);
   useEffect(() => {
     console.log("[UpdateExe configuration]", configuration);
   }, [configuration]);
@@ -129,6 +136,27 @@ const UpdateExe = (props) => {
     setRcList(list);
     console.log("rcContent", list);
   }, [rcContent]);
+
+  const initLocalStorage = () => {
+    if (Object.keys(config).length) {
+      Object.entries(config).forEach(([k, value]) => {
+        const res = { ...configuration[k], value };
+        const { callIpc } = res;
+        if (!!callIpc && !!value) window.ipcR[callIpc](value);
+        console.log("{k v}", { [k]: res });
+        changeConfiguration({
+          [k]: res,
+        });
+      });
+    }
+  };
+
+  useEffect(() => {
+    initLocalStorage();
+  }, []);
+  useEffect(() => {
+    console.log("[configuration]", configuration);
+  }, [configuration]);
 
   return (
     <>
@@ -267,10 +295,4 @@ const DImgBox = (props) => {
   );
 };
 
-// 映射 dispatch 到组件的 props
-const mapDispatchToProps = useSynchronous((dispatch) => ({
-  ipcCreateWin: (data) => dispatch({ type: "IPC_CREATE_WIN", data }),
-  changeStepArray: (data) => dispatch({ type: "CHANGE_STEP_ARRAY", data }),
-}));
-
-export default connect(null, mapDispatchToProps)(UpdateExe);
+export default UpdateExe;

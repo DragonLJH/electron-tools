@@ -1,4 +1,4 @@
-const { ipcMain } = require("electron");
+const { ipcMain, app } = require("electron");
 const { PythonShell } = require("python-shell");
 const { spawn, execSync, exec } = require("child_process");
 const { HttpsProxyAgent } = require("https-proxy-agent");
@@ -6,21 +6,28 @@ const fs = require("fs");
 const logging = require("electron-log");
 const path = require("path");
 const { deleteFolderRecursive, getProxyAddress } = require("./commonFn");
+const { error } = require("console");
 const assetsPath =
   process.env.NODE_ENV === "production"
     ? path.resolve(process.resourcesPath, "assets")
     : path.join(__dirname, "../assets");
+const defaultOutputPath = path.join(app.getPath("userData"), "downloads");
 
 const proxySelf = getProxyAddress();
 class UpdateExe {
   electronDownloadPath;
   rcFilePath;
+  outputPath;
   proxyUrl;
   // proxyUrl;
   signtoolPath = path.join(assetsPath, "exe", "signtool.exe");
   pythonPath = path.join(assetsPath, "exe", "python/python37.dll");
   constructor() {}
   init() {
+    ipcMain.on("ipc-set-output-path", (event, outputPath) => {
+      this.outputPath = outputPath;
+      logging.log("[ipc-set-output-path]", this.outputPath);
+    });
     ipcMain.on("ipc-got-download", async (event, data) => {
       this.checkProxy();
       if (!this.proxyUrl) {
@@ -33,7 +40,10 @@ class UpdateExe {
       const { url, isStream, isProgress } = data;
       const streamData = [];
       const downloadName = url.split("/").slice(-1)[0];
-      const downloadPath = path.join(assetsPath, "downloads", downloadName);
+      const downloadPath = path.join(
+        this.outputPath || defaultOutputPath,
+        downloadName
+      );
       const options = {
         isStream: isStream ?? false,
         agent: {
@@ -53,7 +63,7 @@ class UpdateExe {
       });
       downloadStream.on("downloadProgress", (progress) => {
         const { percent, total } = progress;
-        console.log("downloadProgress", { percent, total });
+        // console.log("downloadProgress", { percent, total });
         isProgress && total && event.reply("download-progress", percent);
       });
       downloadStream.once("end", async (...e) => {
@@ -99,8 +109,14 @@ class UpdateExe {
       if (!fs.existsSync(outputDir)) {
         fs.mkdirSync(outputDir, { recursive: true });
       }
-      const ScriptPath = path.resolve(assetsPath, "downloads/ScriptFile.txt");
-      const MyProg_Rus = path.resolve(assetsPath, "downloads/MyProg_Rus.log");
+      const ScriptPath = path.resolve(
+        this.outputPath || defaultOutputPath,
+        "ScriptFile.txt"
+      );
+      const MyProg_Rus = path.resolve(
+        this.outputPath || defaultOutputPath,
+        "MyProg_Rus.log"
+      );
       const ScriptContent = `
     [FILENAMES]
     Exe=       "${electron}"
@@ -199,38 +215,89 @@ class UpdateExe {
       }
     );
     ipcMain.on("ipc-wvp-signature", (event, { accountName, password }) => {
-      try {
+      new Promise((resolve, reject) => {
         this.checkPythonWvp();
         const exePath = path.join(assetsPath, "exe/python/wvp.exe");
-
         const command = `"${exePath}" ${accountName} ${password} "${this.electronDownloadPath}"`;
         logging.log("wvp signature command:", command);
-        const result = execSync(command, { encoding: "utf8" });
-        logging.log("wvp signature success result:", result);
-        const electronPathFn = (targetPath) =>
-          path.join(this.electronDownloadPath, targetPath);
-        fs.copyFileSync(
-          electronPathFn("electron.exe"),
-          electronPathFn("../electron.exe")
-        );
-        fs.copyFileSync(
-          electronPathFn("electron.exe.sig"),
-          electronPathFn("../electron.exe.sig")
-        );
-
-        // deleteFolderRecursive(this.electronDownloadPath);
-
-        event.reply("wvp-signature-res", {
-          code: 0,
-          result: "success",
+        let result = exec(command, { encoding: "utf8" });
+        let resultStr = "";
+        result.stdout.on("data", (data) => {
+          logging.log(`stdout: ${data}`);
+          resultStr += data;
         });
-      } catch (error) {
-        logging.log("wvp signature failure error:", error);
-        event.reply("wvp-signature-res", {
-          code: -1,
-          result: "failure",
+        result.stderr.on("data", (data) => {
+          logging.error(`stderr: ${data}`);
         });
-      }
+        result.on("close", (code) => {
+          logging.log(
+            `wvp signature success code: ${code}, result: ${resultStr}`
+          );
+          if (code === 0) {
+            resolve(true);
+          } else {
+            reject(new Error("wvp signature failure"));
+          }
+        });
+      })
+        .then((result) => {
+          const electronPathFn = (targetPath) =>
+            path.join(this.electronDownloadPath, targetPath);
+
+          fs.copyFileSync(
+            electronPathFn("electron.exe"),
+            electronPathFn("../electron.exe")
+          );
+          fs.copyFileSync(
+            electronPathFn("electron.exe.sig"),
+            electronPathFn("../electron.exe.sig")
+          );
+
+          event.reply("wvp-signature-res", {
+            code: 0,
+            result: "success",
+          });
+        })
+        .catch((error) => {
+          logging.log("wvp signature failure error:", error);
+          event.reply("wvp-signature-res", {
+            code: -1,
+            result: "failure",
+          });
+        });
+      // try {
+      //   this.checkPythonWvp();
+      //   const exePath = path.join(assetsPath, "exe/python/wvp.exe");
+
+      //   const command = `"${exePath}" ${accountName} ${password} "${this.electronDownloadPath}"`;
+      //   logging.log("wvp signature command:", command);
+      //   const result = execSync(command, { encoding: "utf8" });
+      //   logging.log("wvp signature success result:", result);
+      //   const electronPathFn = (targetPath) =>
+      //     path.join(this.electronDownloadPath, targetPath);
+
+      //   fs.copyFileSync(
+      //     electronPathFn("electron.exe"),
+      //     electronPathFn("../electron.exe")
+      //   );
+      //   fs.copyFileSync(
+      //     electronPathFn("electron.exe.sig"),
+      //     electronPathFn("../electron.exe.sig")
+      //   );
+
+      //   deleteFolderRecursive(this.electronDownloadPath);
+
+      //   event.reply("wvp-signature-res", {
+      //     code: 0,
+      //     result: "success",
+      //   });
+      // } catch (error) {
+      //   logging.log("wvp signature failure error:", error);
+      //   event.reply("wvp-signature-res", {
+      //     code: -1,
+      //     result: "failure",
+      //   });
+      // }
     });
     ipcMain.on("ipc-expand-archive", async (event, targetPath) => {
       try {
@@ -276,7 +343,7 @@ class UpdateExe {
   };
   exeExtractRc = (
     exePath = path.join(this.electronDownloadPath, "electron.exe"),
-    rcPath = path.resolve(assetsPath, "downloads/temp.rc"),
+    rcPath = path.resolve(this.outputPath || defaultOutputPath, "temp.rc"),
     batPath = path.join(assetsPath, "exe/ExeExtractRc.bat"),
     rhPath = path.join(assetsPath, "exe/ResourceHacker.exe")
   ) => {

@@ -32,7 +32,14 @@ const initialState = {
     {
       id: "password",
       label: "wvp密码",
-      value: "Long1234",
+      value: "Long1234.",
+    },
+    {
+      id: "outputPath",
+      label: "输出路径",
+      button: "Selected",
+      callIpc: "ipcSetOutputPath",
+      value: "",
     },
   ].reduce((acc, { id, ...cur }) => {
     acc[id] = { ...cur };
@@ -43,7 +50,8 @@ const initialState = {
 };
 const actionsFn = {
   CHANGE_CONFIGURATION(data, state) {
-    return { configuration: { ...data } };
+    console.log("[actionsFn]", data);
+    return { configuration: { ...state.configuration, ...data } };
   },
   CHANGE_STEP_ARRAY(data, state) {
     return { stepArray: data };

@@ -78,7 +78,10 @@ contextBridge.exposeInMainWorld("ipcR", {
       callback({ code, result });
     });
   },
-
+  ipcSetOutputPath: (path) => {
+    console.log("[ipcSetOutputPath]", path);
+    ipcRenderer.send("ipc-set-output-path", path);
+  },
   ipcEnv: () => ipcRenderer.invoke("ipc-get-env"),
 
   getState: () =>
