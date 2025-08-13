@@ -1,0 +1,14 @@
+.flow-main {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  gap: 5px;
+  .canvas {
+    width: calc(100% - 200px - 5px);
+    height: 100%;
+  }
+  .properties {
+    width: 200px;
+    height: 100%;
+  }
+}

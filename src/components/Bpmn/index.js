@@ -1,6 +1,6 @@
 import "./index.scss"
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { Button } from 'antd';
+import { Input, Button } from 'antd';
 import CustomModeler from './custom-modeler';
 import CustomTokenSimulationModule from './custom-token-simulation-module';
 import customModdleExtension from './custom-properties-panel/custom.json';
@@ -67,6 +67,9 @@ const Bpmn = () => {
     const bpmnCanvas = useRef(null)
     const [bpmnModeler, setBpmnModeler] = useState(null)
     const [customData, setCustomData] = useState({})
+    const [form, setForm] = useState({
+        name: "",
+    })
     useEffect(() => {
         setBpmnModeler(new CustomModeler({
             container: bpmnCanvas.current,
@@ -115,13 +118,19 @@ const Bpmn = () => {
             type: 'application/xml'
         }));
 
-        fetch(`http://localhost:8687/bpmn/saveOrUpdate`, {
-            method: 'POST',
-            body: data
-        });
+        // fetch(`http://localhost:8687/bpmn/saveOrUpdate`, {
+        //     method: 'POST',
+        //     body: data
+        // });
 
         console.log(id, xml);
         localStorage.setItem("bpmnXml", xml)
+        window.ipcR.ipcBpmnSave({
+            id, bpmnData: xml, callback: ({ err, id }) => {
+                if (err) throw new Error(err)
+                console.log("save success", id)
+            }
+        })
     }
 
     const save = async () => {
@@ -160,7 +169,7 @@ const Bpmn = () => {
             let children = JSON.parse(JSON.stringify(customData))
             Object.entries(children).forEach(([k, v], index) => {
                 const { targetRef, outgoing, type, attrs } = v
-                
+
                 if (targetRef) {
                     children[k]["nextNodes"] = [targetRef.id]
                     delete children[k]["targetRef"]
@@ -189,10 +198,10 @@ const Bpmn = () => {
             type: 'application/json'
         }));
 
-        await fetch(`http://localhost:8687/bpmn/saveOrUpdate`, {
-            method: 'POST',
-            body: data
-        });
+        // await fetch(`http://localhost:8687/bpmn/saveOrUpdate`, {
+        //     method: 'POST',
+        //     body: data
+        // });
 
         console.log("processBpmn", processBpmn)
 
@@ -227,6 +236,7 @@ const Bpmn = () => {
 
     return <div className='bpmn'>
         <div className='bpmn-top'>
+            <Input placeholder='请输入流程名称' value={form.name} onClick={(e) => setForm((prev) => ({ ...prev, name: e.target.value }))} />
             <Button type="primary" onClick={save}>save</Button>
         </div>
         <div className='bpmn-canvas' ref={bpmnCanvas}></div>

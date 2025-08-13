@@ -1,0 +1,12 @@
+{
+    "name": "bpmn-tools",
+    "version": "1.0.0",
+    "build": {
+        "appId": "com.example.bpmn-tools",
+        "productName": "Bpmn Tools",
+        "directories": {
+            "output": "release/bt",
+            "buildResources": "build"
+        }
+    }
+}

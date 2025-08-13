@@ -6,6 +6,7 @@ const [value] = args;
 const defaultConfig = {
   main: "main",
   st: "signature-tools",
+  bt: "bpmn-tools",
 };
 const rootPath = process.cwd();
 const packageDirectory = path.resolve(__dirname, "../../package");

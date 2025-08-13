@@ -51,7 +51,7 @@ export const CustomPropertiesPanelHook = (props) => {
           <span>Please select a single element.</span>
         )}
       </div>
-      <button onClick={saveXML}>saveXML</button>
+      {/* <button onClick={saveXML}>saveXML</button> */}
     </div>
   );
 };
@@ -142,7 +142,7 @@ export default class CustomPropertiesPanel extends Component {
             />
           )}
         </div>
-        <button onClick={() => this.saveXML()}>saveXML</button>
+        {/* <button onClick={() => this.saveXML()}>saveXML</button> */}
         <button onClick={() => this.getBpmnData()}>getBpmnData</button>
       </div>
     );
@@ -226,7 +226,10 @@ const HandlingRules = (props) => {
   const { callback } = props;
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [rules, setRules] = useState({ ...defaultRules });
-  const [pOptions, setPOptions] = useState([]);
+  const [pOptions, setPOptions] = useState(new Array(10).fill(null).map((_, index) => ({
+    label: `userName${index + 1}`,
+    value: `userId${index + 1}`,
+  })));
 
   const initPOptions = async () => {
     const response = await fetch("http://localhost:8687/user/queryAllUser");
@@ -247,7 +250,7 @@ const HandlingRules = (props) => {
   };
 
   useEffect(() => {
-    initPOptions();
+    // initPOptions();
   }, []);
 
   const mOptions = [

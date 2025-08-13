@@ -13,6 +13,17 @@ const buildFilter = (item) => {
   );
 };
 
+const connectRoute = (component, dispatchOp) => {
+  const mapDispatchToProps = useSynchronous((dispatch) => (
+    dispatchOp?.reduce((acc, type) => {
+      let key = type.split('_').map((item, index) => index === 0 ? item.toLocaleLowerCase() : item.charAt(0).toUpperCase() + item.slice(1).toLocaleLowerCase()).join('')
+      acc[key] = (data) => dispatch({ type: type, data });
+      return acc
+    }, {})) ?? {}
+  );
+  return connect(null, mapDispatchToProps)(component);
+}
+
 // 动态加载view根目录下的路由组件
 const requireViewRoutes = require.context("../view", true, /index.(jsx|js)$/);
 // 动态加载view根目录下的page.js信息
@@ -35,15 +46,7 @@ export const viewRoutes = requireViewRoutes
     }
 
     let component = requireViewRoutes(item).default // 映射 dispatch 到组件的 props
-
-    const mapDispatchToProps = useSynchronous((dispatch) => (
-      dispatchOp?.reduce((acc, type) => {
-        let key = type.split('_').map((item, index) => index === 0 ? item.toLocaleLowerCase() : item.charAt(0).toUpperCase() + item.slice(1).toLocaleLowerCase()).join('')
-        acc[key] = (data) => dispatch({ type: type, data });
-        return acc
-      }, {})) ?? {}
-    );
-    component = connect(null, mapDispatchToProps)(component);
+    component = connectRoute(component, dispatchOp)
     console.log({
       name,
       component,
@@ -83,9 +86,11 @@ export const homeViewRoutes = requireHomeViewRoutes
   .map((item) => {
     const [reg] = item.match(/index\.(jsx|js)$/);
     const pageMate = requireHomeViewPages(item.replace(reg, "page.js")).default;
+    const { dispatchOp } = pageMate;
     const name = item.replace(/^\.\//, "").replace(/\/?index.(jsx|js)$/, "");
-    let component = requireHomeViewRoutes(item).default
-    console.log(`"[homeViewRoutes] ${name}"`, component);
+
+    let component = requireHomeViewRoutes(item).default // 映射 dispatch 到组件的 props
+    component = connectRoute(component, dispatchOp)
     return {
       name,
       component,

@@ -1,6 +1,8 @@
 const { createwin, URL } = require("./mainWindow");
 const { app, ipcMain, dialog } = require("electron");
 const { updateExe } = require("./updateExe");
+const { bpmnExe } = require("./bpmnExe");
+
 const { initStore } = require("./initStore");
 const { deleteFolderRecursive } = require("./commonFn");
 
@@ -69,6 +71,7 @@ const ipcFun = (win, winList) => {
   });
 
   updateExe.init();
+  bpmnExe.init()
 
   ipcMain.handle("ipc-get-env", () => JSON.stringify(process.env));
 };

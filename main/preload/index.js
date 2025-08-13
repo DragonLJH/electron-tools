@@ -102,6 +102,12 @@ contextBridge.exposeInMainWorld("ipcR", {
     ipcRenderer.on("initialize-state", (event, initialState) =>
       callback(initialState)
     ),
+  ipcBpmnSave: ({ id, bpmnData, callback }) => {
+    ipcRenderer.send("bpmn-save", { id, bpmnData });
+    ipcRenderer.on("bpmn-save-res", (event, { err, id }) => {
+      callback({ err, id });
+    });
+  },
 });
 
 contextBridge.exposeInMainWorld("versions", {

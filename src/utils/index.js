@@ -63,3 +63,24 @@ export const stringToXML = (xmlString) => {
   let xmlObject = parser.parseFromString(xmlString, "text/xml");
   return xmlObject;
 };
+
+
+export const flattenTree = (data, childrenKey = 'children') => {
+  const result = []
+  const recurse = (nodes) => {
+    for (const node of nodes) {
+      if (Object.prototype.toString.call(node) === '[object Array]') {
+        result.push(...node)
+        continue
+      }
+      const { [childrenKey]: children, ...rest } = typeof node === 'object' ? node : { [childrenKey]: node }
+      result.push(rest)
+      if (Array.isArray(children)) {
+        recurse(children)
+      }
+    }
+  }
+  recurse(data)
+  console.log('[flattenTree]result', result)
+  return result
+}
