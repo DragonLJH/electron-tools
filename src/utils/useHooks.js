@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { debounce } from "./index";
 
 export const useMouseCoordinates = () => {
@@ -33,3 +33,16 @@ export const useSynchronous = (fn) => {
     return fn(customDispatch);
   };
 };
+
+
+
+export const useUnmount = (fn, deps) => {
+  const fnRef = useRef(fn);
+  // 更新 fnRef 为最新的函数（捕获最新 deps）
+  fnRef.current = fn;
+  useEffect(() => {
+    return () => {
+      fnRef.current(); // ✅ 卸载时执行最新的 fn
+    };
+  }, []);
+}

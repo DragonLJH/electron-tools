@@ -1,6 +1,7 @@
 import { domify, query } from 'min-dom'
-import { reduce, isArray, find } from 'min-dash'
-import { flattenTree } from '@src/utils'
+import { reduce, isArray, find, set } from 'min-dash'
+import { flattenTree, showModal } from '@src/utils'
+import { useUnmount } from '@src/utils/useHooks'
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 
@@ -215,45 +216,8 @@ function BpmnPropertiesPanel(props) {
     const selectedElement = state.selectedElement;
 
     useEffect(() => {
-        console.log('[BpmnPropertiesPanel]injector', injector)
-        console.log('[BpmnPropertiesPanel]modeling', modeling)
-        console.log('[BpmnPropertiesPanel]', element, eventBus)
+        console.log('[BpmnPropertiesPanel]props', props)
     }, [])
-    const stateDiv = useMemo(() => {
-        const { selectedElement: { businessObject } } = state
-        if (businessObject) {
-            const {
-                $attrs: attrs,
-                $type: type,
-                id,
-                sourceRef,
-                targetRef,
-                eventDefinitions,
-                name,
-                ...data
-            } = businessObject;
-            return (<div className='bio-properties-panel-input-box'>
-                <div className='id'>
-                    <label>id</label>
-                    <input value={id} readOnly />
-                </div>
-                {name && <div className='name'>
-                    <label>name</label>
-                    <input value={name} onChange={(e) => {
-                        // state.selectedElement
-                        //     = { ...state.selectedElement, businessObject: { ...state.selectedElement.businessObject, name: e.target.value } }
-                        // _update(state.selectedElement)
-                        modeling.updateProperties(state.selectedElement, { name: e.target.value })
-
-                        console.log(e.target.value)
-
-                    }} />
-                </div>}
-            </div>)
-        }
-        console.log('stateDiv', state)
-        return <></>
-    }, [state])
 
     /**
      * @param {djs.model.Base | Array < djs.model.Base >} element
@@ -429,6 +393,74 @@ function BpmnPropertiesPanel(props) {
     //     })
     // });
     return <div className='bpmn-properties-panel'>
-        {stateDiv}
+        <PanelBox key={state.selectedElement.id} selectedElement={state.selectedElement} modeling={modeling} eventBus={eventBus} />
     </div>
+}
+const PanelBox = (props) => {
+    const { selectedElement, modeling, eventBus } = props
+    const _process = useMemo(() => selectedElement.type === "bpmn:Process", [selectedElement.type])
+    if (!selectedElement.businessObject) return <></>
+    const [_businessObject, setBusinessObject] = useState(selectedElement.businessObject)
+    const [record, setRecord] = useState(null)
+    useUnmount(() => {
+        console.log("卸载时拿到最新的值:", _businessObject, _process);
+        if (!_process && !!record)
+            showModal({
+                title: "提示",
+                message: "是否更新修改",
+                confirmText: "确认",
+                cancelText: "取消",
+            }).then((ok) => {
+                if (ok) {
+                    const {
+                        $attrs: attrs,
+                        $type: type,
+                        id,
+                        sourceRef,
+                        targetRef,
+                        eventDefinitions,
+                        name,
+                        ...data
+                    } = _businessObject ?? {};
+                    modeling.updateProperties(selectedElement, { ...attrs, name })
+                }
+            })
+    }, [_businessObject]);
+    const updateName = (name) => {
+        setRecord((prev) => ({ ...prev, name }))
+        setBusinessObject((prev) => ({ ...prev, name }))
+    }
+    const updateAttr = (key, value) => {
+        setRecord((prev) => ({ ...prev, $attrs: { ...prev.$attrs, [key]: value } }))
+        setBusinessObject((prev) => ({ ...prev, $attrs: { ...prev.$attrs, [key]: value } }))
+    }
+    return (<div className='bio-properties-panel-input-box'>
+        <div className='id'>
+            <label>id</label>
+            <input value={selectedElement.id} readOnly />
+        </div>
+        {_process || <>
+            <div className='name'>
+                <label>name</label>
+                <input value={_businessObject.name || ""} onChange={(e) => {
+                    let value = e?.target?.value
+                    if (value) updateName(value)
+                }} />
+            </div>
+            {
+                Object.keys(_businessObject.$attrs || {}).map((key) => {
+                    return <div key={key} className='attr'>
+                        <label>{key}</label>
+                        <input value={_businessObject.$attrs[key]} onChange={(e) => {
+                            let value = e?.target?.value
+                            if (value) updateAttr(key, value)
+                        }} />
+                    </div>
+                })
+            }
+            <div className='save-button'>
+                save
+            </div>
+        </>}
+    </div>)
 }

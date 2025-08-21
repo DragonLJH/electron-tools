@@ -7,6 +7,7 @@ import {
 } from 'bpmn-js-properties-panel';
 import { initialDiagram } from './help/xmlStr'
 import CustomPropertiesPanelModule from './help/CustomPropertiesPanel'
+import { useSelector } from "react-redux";
 const FlowMain = () => {
   const modelerRef = useRef(null), propertiesRef = useRef(null)
   const [modeler, setModeler] = useState(null);
@@ -28,7 +29,7 @@ const FlowMain = () => {
     }
   }, [modelerRef.current]);
   useEffect(() => {
-    console.log(modeler?.get("moddle"));
+    console.log('[FlowMain]', modeler?.get("moddle"));
   })
   return (
     <div className="flow-main">

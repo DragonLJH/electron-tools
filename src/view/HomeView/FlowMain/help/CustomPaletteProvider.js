@@ -2,6 +2,21 @@ import { assign } from 'min-dash';
 import GlobalConnectModule from 'diagram-js/lib/features/global-connect';
 
 class CustomPaletteProvider {
+    static $inject = [
+        'palette',
+        'create',
+        'elementFactory',
+        'spaceTool',
+        'lassoTool',
+        'handTool',
+        'globalConnect',
+        'translate'
+    ]
+    _businessCustomOptions = {
+        $attrs: {
+            a: 1
+        },
+    }
     constructor(
         palette, create, elementFactory,
         spaceTool, lassoTool, handTool,
@@ -15,8 +30,17 @@ class CustomPaletteProvider {
         this._handTool = handTool;
         this._globalConnect = globalConnect;
         this._translate = translate;
-
+        console.log('[CustomPaletteProvider]palette', palette)
         palette.registerProvider(this);
+        setTimeout(() => {
+            this._businessCustomOptions = {
+                $attrs: {
+                    a: 1, b: 2
+                },
+                name: 'tset'
+            }
+            palette._rebuild()
+        }, 5000)
     }
 
     /**
@@ -30,14 +54,26 @@ class CustomPaletteProvider {
             _lassoTool: lassoTool,
             _handTool: handTool,
             _globalConnect: globalConnect,
-            _translate: translate
+            _translate: translate,
+            _businessCustomOptions: businessCustomOptions
         } = this;
-
         const actions = {};
-
+        function _insetBusiness(set, options) {
+            const _set = (options) => {
+                Object.entries(options).forEach(([key, value]) => {
+                    if (Object.prototype.toString.call(value) === '[object Object]') {
+                        _set(value)
+                    } else {
+                        set(key, value)
+                    }
+                })
+            }
+            _set(options)
+        }
         function createAction(type, group, className, title, options) {
             function createListener(event) {
                 const shape = elementFactory.createShape(assign({ type }, options));
+                _insetBusiness((k, v) => shape.businessObject.set(k, v), businessCustomOptions)
                 create.start(event, shape);
             }
 
@@ -89,16 +125,6 @@ class CustomPaletteProvider {
     }
 }
 
-CustomPaletteProvider.$inject = [
-    'palette',
-    'create',
-    'elementFactory',
-    'spaceTool',
-    'lassoTool',
-    'handTool',
-    'globalConnect',
-    'translate'
-];
 
 export default {
     __init__: [
