@@ -435,11 +435,11 @@ const PanelBox = (props) => {
         setBusinessObject((prev) => ({ ...prev, $attrs: { ...prev.$attrs, [key]: value } }))
     }
     return (<div className='bio-properties-panel-input-box'>
-        <div className='id'>
-            <label>id</label>
-            <input value={selectedElement.id} readOnly />
-        </div>
-        {_process || <>
+        {_process ? <span>Please select an element.</span> : <>
+            <div className='id'>
+                <label>id</label>
+                <input value={selectedElement.id} readOnly />
+            </div>
             <div className='name'>
                 <label>name</label>
                 <input value={_businessObject.name || ""} onChange={(e) => {

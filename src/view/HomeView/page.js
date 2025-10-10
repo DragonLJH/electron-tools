@@ -7,4 +7,5 @@ export default {
     isCreate: true,
     redirectPath: '/UpdateExe',
   },
+  dispatchOp: ["IPC_CREATE_WIN"]
 };

@@ -1,5 +1,5 @@
 {
-  "name": "bpmn-tools",
+  "name": "electron-react-base",
   "version": "1.0.0",
   "description": "",
   "main": "dist/main/main.js",
@@ -16,13 +16,13 @@
   "author": "",
   "license": "ISC",
   "build": {
-    "appId": "com.example.bpmn-tools",
-    "productName": "Bpmn Tools",
+    "appId": "com.example.my-electron-app",
+    "productName": "My Electron App",
     "asar": true,
     "electronVersion": "15.5.7",
     "electronDist": "node_modules/electron/dist",
     "directories": {
-      "output": "release/bt",
+      "output": "release/erb",
       "buildResources": "build"
     },
     "files": [

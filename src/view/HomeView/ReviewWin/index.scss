@@ -1,0 +1,68 @@
+.d_form {
+  --gap: 5px;
+  input,
+  input[type="text"] {
+    -webkit-appearance: none; /* 去掉默认的WebKit样式 */
+    -moz-appearance: none; /* 去掉默认的Mozilla样式 */
+    appearance: none; /* 去掉默认的样式 */
+    border: none; /* 去掉边框 */
+    outline: none; /* 去掉轮廓 */
+    background: none; /* 去掉背景 */
+    padding: 0; /* 去掉内边距 */
+    margin: 0; /* 去掉外边距 */
+    font-family: inherit; /* 继承字体 */
+    font-size: inherit; /* 继承字体大小 */
+    color: inherit; /* 继承文字颜色 */
+  }
+  box-sizing: border-box;
+  position: relative;
+  width: 50vw;
+  padding: var(--gap);
+  margin: var(--gap);
+  border: solid 1px #ccc;
+  border-radius: var(--gap);
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap);
+  margin: var(--gap);
+  &-item {
+    flex: 1 1 100%;
+    display: flex;
+    align-items: center;
+    gap: var(--gap);
+    width: 100%;
+    border: solid 1px #ccc;
+    border-radius: var(--gap);
+    // padding: var(--gap);
+    &[data-read="true"] {
+      background: #00000011;
+      pointer-events: none;
+    }
+    .input {
+      flex: 1;
+      height: calc(100% - 2 * var(--gap));
+      input,
+      input[type="text"] {
+        width: 100%;
+        padding: var(--gap);
+      }
+      &:focus-within {
+        background: left var(--gap) bottom var(--gap) /
+          calc(100% - var(--gap) - var(--gap)) 1px no-repeat
+          linear-gradient(to right, #000, #000);
+      }
+      padding: var(--gap);
+    }
+    .btn {
+      height: 100%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
+      max-width: 100px;
+      width: min-content;
+      border-left: solid 1px #ccc;
+      padding: 0 var(--gap);
+    }
+  }
+}

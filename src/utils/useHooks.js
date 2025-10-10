@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { debounce } from "./index";
+import { useLocation } from "react-router-dom";
 
 export const useMouseCoordinates = () => {
   const [coordinates, setCoordinates] = useState({ x: 0, y: 0 });
@@ -22,7 +23,7 @@ export const useSynchronous = (fn) => {
     const customDispatch = (action) => {
       let { type, data } = action;
       // 处理特定类型的动作
-      if (type === "ROUTE_INIT_ACTION") {
+      if (["ROUTE_INIT_ACTION", "HOME_ROUTE_INIT_ACTION"].includes(type)) {
         data = data.map(({ component, ...item }) => item);
       }
       console.log("[window.ipcR]", window.ipcR);
@@ -45,4 +46,9 @@ export const useUnmount = (fn, deps) => {
       fnRef.current(); // ✅ 卸载时执行最新的 fn
     };
   }, []);
+}
+
+export function useQuery() {
+  const { search } = useLocation();
+  return React.useMemo(() => new URLSearchParams(search), [search]);
 }

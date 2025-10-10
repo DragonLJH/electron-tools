@@ -47,6 +47,7 @@ const initialState = {
   }, {}),
   // route
   routes: [],
+  homeViewRoutes: []
 };
 const actionsFn = {
   CHANGE_CONFIGURATION(data, state) {
@@ -61,6 +62,10 @@ const actionsFn = {
   ROUTE_INIT_ACTION(data) {
     return { routes: data };
   },
+  // 定义一个初始化路由的action，接收一个data参数，返回一个包含routes属性的对象
+  HOME_ROUTE_INIT_ACTION(data) {
+    return { homeViewRoutes: data };
+  },
 
   // 定义一个添加路由的action，接收一个data参数和一个state参数，返回一个包含routes属性的对象
   ROUTE_ADD_ACTION(data, state) {
@@ -69,6 +74,7 @@ const actionsFn = {
   IPC_CREATE_WIN({ name: cName }, state) {
     const { routes } = state;
     const item = routes.find((item) => item.name == cName);
+    console.log("create win", cName, routes, item);
     let winKey = Math.random().toString().slice(2);
     let { name, path, mate } = item;
     const { winOp } = mate;

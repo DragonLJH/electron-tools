@@ -9,6 +9,7 @@ import {
 } from 'diagram-js/lib/util/Mouse';
 import GlobalConnectModule from 'diagram-js/lib/features/global-connect';
 import ContextPadProvider from 'bpmn-js/lib/features/context-pad/ContextPadProvider';
+import CustomPopupMenu from './CustomPopupMenu';
 function CustomContextPadProvider(
     config, injector, eventBus,
     contextPad, modeling, elementFactory,
@@ -310,6 +311,7 @@ class CustomContextPadProviderModule {
         'translate',
         'appendPreview'
     ]
+    _businessCustomOptions = {}
     constructor(config, injector, eventBus,
         contextPad, modeling, elementFactory,
         connect, create, popupMenu,
@@ -336,7 +338,7 @@ class CustomContextPadProviderModule {
         if (config.autoPlace !== false) {
             this._autoPlace = injector.get('autoPlace', false);
         }
-
+        console.log('[contextPad]', contextPad, this._autoPlace, popupMenu)
         eventBus.on('create.end', 250, function (event) {
             var context = event.context,
                 shape = context.shape;
@@ -351,6 +353,16 @@ class CustomContextPadProviderModule {
                 entries.replace.action.click(event, shape);
             }
         });
+        eventBus.on('root.updateBusiness', e => {
+            console.log('CustomContextPadProviderModule[root.updateBusiness]', e)
+            const { type, ...businessObject } = e
+            this._businessCustomOptions = {
+                ...this._businessCustomOptions,
+                ...businessObject
+            }
+            contextPad._init()
+        })
+
     }
 
     getMultiElementContextPadEntries(elements) {
@@ -399,7 +411,8 @@ class CustomContextPadProviderModule {
             rules = this._rules,
             autoPlace = this._autoPlace,
             translate = this._translate,
-            appendPreview = this._appendPreview;
+            appendPreview = this._appendPreview,
+            businessCustomOptions = this._businessCustomOptions;
         const { type } = element
 
         var actions = {};
@@ -414,6 +427,18 @@ class CustomContextPadProviderModule {
             connect.start(event, element);
         }
 
+        function _insetBusiness(set, options) {
+            const _set = (options) => {
+                Object.entries(options).forEach(([key, value]) => {
+                    if (Object.prototype.toString.call(value) === '[object Object]') {
+                        _set(value)
+                    } else {
+                        set(key, value)
+                    }
+                })
+            }
+            _set(options)
+        }
         /**
          * Create an append action.
          *
@@ -425,16 +450,16 @@ class CustomContextPadProviderModule {
          * @return {ContextPadEntry}
          */
         function appendAction(type, className, title, options) {
-
+            const shortType = type.replace(/^bpmn:/, '');
             if (typeof title !== 'string') {
                 options = title;
-                title = translate('Append {type}', { type: type.replace(/^bpmn:/, '') });
+                title = translate('Append {type}', { type: shortType });
             }
 
             function appendStart(event, element) {
-
                 var shape = elementFactory.createShape(assign({ type: type }, options));
-
+                console.log('[appendStart]shortType', shortType, businessCustomOptions)
+                _insetBusiness((k, v) => shape.businessObject.set(k, v), businessCustomOptions)
                 create.start(event, shape, {
                     source: element
                 });
@@ -445,6 +470,8 @@ class CustomContextPadProviderModule {
             var append = autoPlace ? function (_, element) {
                 var shape = elementFactory.createShape(assign({ type: type }, options));
 
+                console.log('[append]shortType', shortType, businessCustomOptions)
+                _insetBusiness((k, v) => shape.businessObject.set(k, v), businessCustomOptions)
                 autoPlace.append(element, shape);
 
                 appendPreview.cleanUp();
@@ -473,7 +500,42 @@ class CustomContextPadProviderModule {
                 }
             };
         }
+        function getReplaceMenuPosition(element) {
 
+            var Y_OFFSET = 5;
+
+            var pad = contextPad.getPad(element).html;
+
+            var padRect = pad.getBoundingClientRect();
+
+            var pos = {
+                x: padRect.left,
+                y: padRect.bottom + Y_OFFSET
+            };
+
+            return pos;
+        }
+        // Replace menu entry
+        assign(actions, {
+            'replace': {
+                group: 'edit',
+                className: 'bpmn-icon-screw-wrench',
+                title: translate('Change type'),
+                action: {
+                    click: function (event, element) {
+                        var position = assign(getReplaceMenuPosition(element), {
+                            cursor: { x: event.x, y: event.y }
+                        });
+
+                        popupMenu.open(element, 'bpmn-replace', position, {
+                            title: translate('Change element'),
+                            width: 300,
+                            search: true
+                        });
+                    }
+                }
+            }
+        });
         assign(actions, {
             'append.end-event': appendAction(
                 'bpmn:EndEvent',
@@ -485,10 +547,25 @@ class CustomContextPadProviderModule {
                 'bpmn-icon-gateway-none',
                 translate('Append Gateway')
             ),
+            'append.exclusive-gateway': appendAction(
+                'bpmn:ExclusiveGateway',
+                'bpmn-icon-gateway-xor',
+                translate('Append Gateway')
+            ),
+            'append.parallel-gateway': appendAction(
+                'bpmn:ParallelGateway',
+                'bpmn-icon-gateway-parallel',
+                translate('Append ParallelGateway')
+            ),
             'append.append-task': appendAction(
-                'bpmn:Task',
-                'bpmn-icon-task',
-                translate('Append Task')
+                'bpmn:UserTask',
+                'bpmn-icon-user-task',
+                translate('Append UserTask')
+            ),
+            'append.receive-task': appendAction(
+                'bpmn:ReceiveTask',
+                'bpmn-icon-receive-task',
+                translate('Append ReceiveTask')
             ),
         })
         assign(actions, {
@@ -512,21 +589,6 @@ class CustomContextPadProviderModule {
         });
 
         const actionsFilter = (filterList, targetObject, o = {}) => {
-            // 添加 自定义 pad 面板
-            assign(targetObject, {
-                // 并行网关
-                'append.parallel-gateway': appendAction(
-                    'bpmn:ParallelGateway',
-                    'bpmn-icon-gateway-parallel',
-                    translate('Append ParallelGateway')
-                ),
-                // 办理用户节点
-                // 'append.append-task': appendAction(
-                //     'bpmn:UserTask',
-                //     'bpmn-icon-user-task',
-                //     translate('Append UserTask')
-                // ),
-            });
             filterList.forEach(item => o[item] = targetObject[item])
             return Object.assign({}, o)
         }
@@ -535,8 +597,8 @@ class CustomContextPadProviderModule {
         const addPrefix = (list, prefix = "append.") => list.map(item => prefix + item)
 
         const o = {
-            "bpmn:StartEvent": [...addPrefix(["append-task", "end-event", "gateway", "parallel-gateway"]), ...commonActions],
-            "bpmn:UserTask": [...addPrefix(["append-task", "end-event", "gateway", "parallel-gateway"]), ...commonActions],
+            "bpmn:StartEvent": [...addPrefix(["append-task", "end-event", "exclusive-gateway", "parallel-gateway"]), ...commonActions],
+            "bpmn:UserTask": [...addPrefix(["append-task", "end-event", "exclusive-gateway", "parallel-gateway"]), ...commonActions],
             "bpmn:ExclusiveGateway": [...addPrefix(["append-task", "end-event"]), ...commonActions],
             "bpmn:ParallelGateway": [...addPrefix(["append-task", "end-event"]), ...commonActions],
             "bpmn:EndEvent": [...commonActions],
@@ -561,6 +623,7 @@ export default {
     __init__: [
         'contextPadProvider',
     ],
+    // __depends__: [GlobalConnectModule, CustomPopupMenu],
     __depends__: [GlobalConnectModule],
 
     // contextPadProvider: ['type', CustomContextPadProvider]

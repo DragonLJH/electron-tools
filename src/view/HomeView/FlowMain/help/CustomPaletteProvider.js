@@ -1,5 +1,8 @@
 import { assign } from 'min-dash';
 import GlobalConnectModule from 'diagram-js/lib/features/global-connect';
+import CustomLassoTool from './CustomLassoTool';
+
+
 
 class CustomPaletteProvider {
     static $inject = [
@@ -10,17 +13,14 @@ class CustomPaletteProvider {
         'lassoTool',
         'handTool',
         'globalConnect',
-        'translate'
+        'translate',
+        'eventBus'
     ]
-    _businessCustomOptions = {
-        $attrs: {
-            a: 1
-        },
-    }
+    _businessCustomOptions = {}
     constructor(
         palette, create, elementFactory,
         spaceTool, lassoTool, handTool,
-        globalConnect, translate
+        globalConnect, translate, eventBus
     ) {
         this._palette = palette;
         this._create = create;
@@ -30,17 +30,17 @@ class CustomPaletteProvider {
         this._handTool = handTool;
         this._globalConnect = globalConnect;
         this._translate = translate;
-        console.log('[CustomPaletteProvider]palette', palette)
+        console.log('[CustomPaletteProvider]palette', palette, lassoTool)
         palette.registerProvider(this);
-        setTimeout(() => {
+        eventBus.on('root.updateBusiness', e => {
+            console.log('[root.updateBusiness]', e)
+            const { type, ...businessObject } = e
             this._businessCustomOptions = {
-                $attrs: {
-                    a: 1, b: 2
-                },
-                name: 'tset'
+                ...this._businessCustomOptions,
+                ...businessObject
             }
             palette._rebuild()
-        }, 5000)
+        })
     }
 
     /**
@@ -71,13 +71,14 @@ class CustomPaletteProvider {
             _set(options)
         }
         function createAction(type, group, className, title, options) {
+            const shortType = type.replace(/^bpmn:/, '');
             function createListener(event) {
                 const shape = elementFactory.createShape(assign({ type }, options));
                 _insetBusiness((k, v) => shape.businessObject.set(k, v), businessCustomOptions)
+                console.log('[createListener]shortType', shortType)
                 create.start(event, shape);
             }
 
-            const shortType = type.replace(/^bpmn:/, '');
 
             return {
                 group,
@@ -90,6 +91,16 @@ class CustomPaletteProvider {
             };
         }
         assign(actions, {
+            'lasso-tool': {
+                group: 'tools',
+                className: 'bpmn-icon-lasso-tool',
+                title: translate('Activate the lasso tool'),
+                action: {
+                    click: function (event) {
+                        lassoTool.activateSelection(event);
+                    }
+                }
+            },
             'global-connect-tool': {
                 group: 'tools',
                 className: 'bpmn-icon-connection-multi',
@@ -130,6 +141,7 @@ export default {
     __init__: [
         'paletteProvider',
     ],
+    // __depends__: [GlobalConnectModule, CustomLassoTool],
     __depends__: [GlobalConnectModule],
     paletteProvider: ['type', CustomPaletteProvider]
 };

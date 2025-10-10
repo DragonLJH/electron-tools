@@ -1,0 +1,68 @@
+.d-config-form {
+//   input {
+//     -webkit-appearance: none; /* 去掉默认的WebKit样式 */
+//     -moz-appearance: none; /* 去掉默认的Mozilla样式 */
+//     appearance: none; /* 去掉默认的样式 */
+//     border: none; /* 去掉边框 */
+//     outline: none; /* 去掉轮廓 */
+//     background: none; /* 去掉背景 */
+//     padding: 0; /* 去掉内边距 */
+//     margin: 0; /* 去掉外边距 */
+//     font-family: inherit; /* 继承字体 */
+//     font-size: inherit; /* 继承字体大小 */
+//     color: inherit; /* 继承文字颜色 */
+//     &[type="radio"] {
+//       padding: 5px;
+//       margin: 0 5px;
+//       outline: solid 1px #ccc;
+//       border-radius: 50%;
+//       &[checked="true"] {
+//         background-color: #f00;
+//       }
+//     }
+//   }
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  width: 500px;
+  border: solid 1px #ccc;
+  margin: 10px;
+  padding: 10px;
+  &-item {
+    width: 100%;
+    &[data-error="true"] {
+      outline: solid 1px red;
+    }
+    display: inline-flex;
+    gap: 5px;
+    box-sizing: border-box;
+    &-lable {
+      width: min-content;
+    }
+  }
+  .caption-box {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    & > .caption {
+      position: relative;
+      width: 20px;
+      height: 20px;
+      border-radius: 50%;
+      background-color: #ccc;
+      &::after {
+        content: "!";
+        color: #fff;
+        font-size: 12px;
+        position: absolute;
+        top: 0;
+        right: 0;
+        bottom: 0;
+        left: 0;
+        margin: auto;
+        text-align: center;
+        line-height: 20px;
+      }
+    }
+  }
+}

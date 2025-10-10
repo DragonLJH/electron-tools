@@ -4,8 +4,20 @@
   padding: 5px 10px;
   display: flex;
   align-items: center;
+  input {
+    -webkit-appearance: none; /* 去掉默认的WebKit样式 */
+    -moz-appearance: none; /* 去掉默认的Mozilla样式 */
+    appearance: none; /* 去掉默认的样式 */
+    border: none; /* 去掉边框 */
+    outline: none; /* 去掉轮廓 */
+    background: none; /* 去掉背景 */
+    padding: 0; /* 去掉内边距 */
+    margin: 0; /* 去掉外边距 */
+    font-family: inherit; /* 继承字体 */
+    font-size: inherit; /* 继承字体大小 */
+    color: inherit; /* 继承文字颜色 */
+  }
   .d-item {
-    width: 100%;
     padding: 5px 10px;
     &[data-disabled] {
       background-color: #eee;
@@ -13,35 +25,40 @@
     &[data-flex] {
       border: solid 1px #999;
       border-radius: 5px;
-      padding: 0px 10px 0px 0px;
+      // padding: 0px 10px 0px 0px;
+      padding: 0;
       display: flex;
+      flex-wrap: wrap;
       overflow-x: hidden;
       gap: 10px;
-      --l-w: 100px;
       .label {
-        flex: 1 1 var(--l-w);
+        width: min-content;
+        max-width: 6rem;
         padding: 5px 10px;
-        background-color: #ccc;
+        // background: left 0 bottom 0 / 100% 2px no-repeat
+        //     linear-gradient(to right, #ccc, #ccc),
+        //   left 100% top 0 / 2px 100% no-repeat
+        //     linear-gradient(to bottom, #ccc, #ccc);
+        box-shadow: inset 0 0 1px #00000066;
+        border-radius: 5px;
         overflow-x: hidden;
         text-overflow: ellipsis;
         white-space: nowrap;
         text-align: right;
       }
       input {
+        box-sizing: border-box;
         padding: 5px 10px;
-        flex: 1 1 calc(100% - var(--l-w) - 10px);
+        max-width: 100%;
+        flex: 1 1 calc(100% - 110px);
+        &:focus-within {
+          background: left 10px bottom 5px / calc(100% - 20px) 1px no-repeat
+            linear-gradient(to right, #000, #000);
+        }
       }
     }
     .label {
       cursor: pointer;
-    }
-    input {
-      border: none;
-      background-color: transparent;
-      outline: none;
-      appearance: none;
-      padding: 0;
-      margin: 0;
     }
   }
   .d-button {
@@ -63,6 +80,7 @@
       flex: 1 1 calc(100% - var(--n-b) - var(--gap));
     }
     .d-button {
+      height: 100%;
       cursor: pointer;
       display: inline-block;
       flex: 1 1 var(--n-b);

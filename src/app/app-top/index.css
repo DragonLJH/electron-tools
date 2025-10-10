@@ -1,5 +1,6 @@
 .app-top {
-  height: 100px;
+  --h: 100px;
+  height: var(--h);
   box-sizing: border-box;
 }
 .app-top-title {

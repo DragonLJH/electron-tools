@@ -2,10 +2,8 @@ import React, { useEffect, useState, useContext, useRef, useMemo } from "react";
 import "./index.css";
 import { useHistory, useLocation } from "react-router-dom";
 import { viewRoutes } from "@src/route/index";
-function useQuery() {
-  const { search } = useLocation();
-  return React.useMemo(() => new URLSearchParams(search), [search]);
-}
+import { useQuery } from '@src/utils/useHooks'
+
 const AppTop = () => {
   const l = useLocation();
   const h = useHistory();
@@ -40,10 +38,11 @@ const AppTop = () => {
     return false;
   }, []);
   useEffect(() => {
-    console.log("hasParent", hasParent);
+    console.log('[app-top] l.search', l.search, l.search.replace("?", "").split("=")[1])
     if (l.search) setWinKey(l.search.replace("?", "").split("=")[1]);
   }, []);
   useEffect(() => {
+    console.log('[app-top] location.href', location.href.match(/\/([^\/?]+)(?=\?|$)/)[1])
     setUrl(location.href);
   }, [winKey]);
   useEffect(() => {

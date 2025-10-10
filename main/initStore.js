@@ -3,7 +3,7 @@ const store = require("./store/index.js");
 class InitStore {
   _action;
   _sederWin;
-  constructor() {}
+  constructor() { }
   get state() {
     return store.getState();
   }
@@ -13,7 +13,7 @@ class InitStore {
       BrowserWindow.getAllWindows().forEach((window) => {
         if (
           window !== this._sederWin &&
-          this._action.type !== "ROUTE_INIT_ACTION"
+          !['ROUTE_INIT_ACTION', 'HOME_ROUTE_INIT_ACTION'].includes(this._action.type)
         ) {
           window.webContents.send("store-updated", this._action);
         }

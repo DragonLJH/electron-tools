@@ -1,11 +1,12 @@
 import "./index.scss";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   homeViewRoutes,
   HomeViewComponent,
   IS_SHOW_MENU,
 } from "@src/route/index";
 import { useHistory, useLocation, useParams } from "react-router-dom";
+import { useSelector } from "react-redux";
 import DMenu from "@src/components/DMenu/index";
 import { mergeObj } from "@src/utils/index";
 function getItem(label, key, mate, children, icon, type) {
@@ -19,48 +20,47 @@ function getItem(label, key, mate, children, icon, type) {
   };
 }
 
-const HomeView = () => {
+const HomeView = (props) => {
+  const { ipcCreateWin } = props;
+  const routes = useSelector((state) => state.homeViewRoutes);
   const history = useHistory();
   const { pathname } = useLocation();
   const params = useParams();
   const [collapsed, setCollapsed] = useState(false);
-
-  const [routes, setRoutes] = useState(null);
-  console.log(history, pathname, params);
-  console.log("HomeView", routes);
+  // const routes = useSelector((state) => state.routes);
   const menuClick = (data) => {
-    let winKey = Math.random().toString().slice(2);
     let { key, label, mate } = data;
     const { winOp } = mate;
     const { isCreate } = winOp;
-    if (isCreate) {
-      key = key.split("/");
-      key = key[key.length - 1];
-    } else {
-      history.push(key);
-    }
-    window.ipcR.ipcCreatewin({
-      winKey,
-      routeOp: winOp,
-      routeName: label,
-      routePath: `${key}?winKey=${winKey}`,
-    });
-    console.log("menuClick", winKey, key, label, mate);
+    if (isCreate) return ipcCreateWin({ name: label });
+    history.push(key);
   };
   useEffect(() => {
-    setRoutes(
-      homeViewRoutes.map(({ name, path, mate }) => {
+    console.log("[HomeView]routes", routes);
+  }, []);
+  const _routes = useMemo(() => {
+    return routes
+      .map(({ name, path, mate }) => {
         return getItem(name, path, mate);
       })
-    );
-  }, []);
+      .filter(({ mate }) => mate.winOp?.isHomeMenu ?? true)
+      .map((data, index) => {
+        const { label } = data;
+        return (
+          <div key={index} onClick={() => menuClick(data)}>
+            {label}
+          </div>
+        );
+      });
+  }, [routes]);
   return (
     <>
       <div className="home-view">
         <div className="home-view-left">
           {(process.env.BUILD_MEMU ?? "true") === "true" &&
             IS_SHOW_MENU &&
-            routes && <DMenu items={routes} onClick={menuClick} />}
+            routes &&
+            _routes}
           {/* {routes && (
             <Menu
               defaultSelectedKeys={pathname}

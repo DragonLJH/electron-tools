@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { connect, useSelector } from "react-redux";
 import { HashRouter as Router, Route, Redirect } from "react-router-dom";
-import { useSynchronous } from "@src/utils/useHooks";
+import { useSynchronous, useQuery } from "@src/utils/useHooks";
 
 export const IS_SHOW_MENU = true;
 
@@ -38,7 +38,7 @@ export const viewRoutes = requireViewRoutes
     // isCreate 是否创建窗口
     // isMenu 是否显示菜单
     // redirectPath 重定向路径
-    const { winOp: { isCreate, isMenu, redirectPath }, dispatchOp } = pageMate;
+    const { winOp: { isCreate, isMenu, redirectPath, hideTop }, dispatchOp } = pageMate;
     let name = item.replace(/^\.\//, "").replace(/\/index.(jsx|js)$/, "");
     if (isCreate && name.indexOf("/") > -1) {
       name = name.split("/");
@@ -59,7 +59,7 @@ export const viewRoutes = requireViewRoutes
       component,
       path: `/${name}`,
       mate: pageMate,
-      isMenu,
+      isMenu, hideTop,
       redirectPath,
     };
   })
@@ -110,7 +110,7 @@ const DynamicRoute = ({ path, component }) => {
 
 // 首页路由组件
 export const HomeViewComponent = () => {
-  const [routes, setRoutes] = useState(homeViewRoutes);
+  const routes = useSelector((state) => state.homeViewRoutes);
   return (
     <>
       <Router>
@@ -131,11 +131,12 @@ export const HomeViewComponent = () => {
 
 // 根路由组件
 const MainRouter = (props) => {
-  const { children, init } = props;
+  const { children, init, initHome } = props;
   const routes = useSelector((state) => state.routes);
   // const [routes, setRoutes] = useState(viewRoutes);
   useEffect(() => {
     init(viewRoutes);
+    initHome(homeViewRoutes);
   });
 
   return (
@@ -179,6 +180,8 @@ const MainRouter = (props) => {
 // 映射 dispatch 到组件的 props
 const mapDispatchToProps = useSynchronous((dispatch) => ({
   init: (data) => dispatch({ type: "ROUTE_INIT_ACTION", data }),
+  initHome: (data) => dispatch({ type: "HOME_ROUTE_INIT_ACTION", data }),
+
 }));
 
 export default connect(null, mapDispatchToProps)(MainRouter);
