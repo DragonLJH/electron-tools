@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import { debounce } from "./index";
 import { useLocation } from "react-router-dom";
 
@@ -17,7 +17,7 @@ export const useMouseCoordinates = () => {
 };
 
 // 自定义 Hook，用于同步调度功能
-export const useSynchronous = (fn) => {
+export const useSynchronous = (fn, _filter = []) => {
   return (dispatch) => {
     // 自定义的调度函数
     const customDispatch = (action) => {
@@ -27,8 +27,9 @@ export const useSynchronous = (fn) => {
         data = data.map(({ component, ...item }) => item);
       }
       console.log("[window.ipcR]", window.ipcR);
-      // 分发动作到 IPC
-      window.ipcR.dispatchAction({ type, data });
+      if (!_filter.includes(type))
+        // 分发动作到 IPC
+        window.ipcR.dispatchAction({ type, data });
       return dispatch(action);
     };
     return fn(customDispatch);
@@ -50,5 +51,5 @@ export const useUnmount = (fn, deps) => {
 
 export function useQuery() {
   const { search } = useLocation();
-  return React.useMemo(() => new URLSearchParams(search), [search]);
+  return useMemo(() => new URLSearchParams(search), [search]);
 }

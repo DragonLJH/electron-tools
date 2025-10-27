@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import AppTop from "@src/app/app-top/index";
 import "./app.css";
 import MainRouter from "@src/route/index";

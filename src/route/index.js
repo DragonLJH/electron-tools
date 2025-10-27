@@ -133,6 +133,7 @@ export const HomeViewComponent = () => {
 const MainRouter = (props) => {
   const { children, init, initHome } = props;
   const routes = useSelector((state) => state.routes);
+  const hasParent = useSelector((state) => state.hasParent);
   // const [routes, setRoutes] = useState(viewRoutes);
   useEffect(() => {
     init(viewRoutes);
@@ -143,7 +144,7 @@ const MainRouter = (props) => {
     <>
       <Router>
         {children}
-        <div className="app-main">
+        <div className="app-main" style={{ '--h': `${hasParent ? 50 : 100}px` }}>
           {Boolean(routes) && (
             <>
               {/* 重定向登录页 */}
@@ -181,7 +182,6 @@ const MainRouter = (props) => {
 const mapDispatchToProps = useSynchronous((dispatch) => ({
   init: (data) => dispatch({ type: "ROUTE_INIT_ACTION", data }),
   initHome: (data) => dispatch({ type: "HOME_ROUTE_INIT_ACTION", data }),
-
 }));
 
 export default connect(null, mapDispatchToProps)(MainRouter);

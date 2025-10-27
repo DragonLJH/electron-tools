@@ -1,57 +1,50 @@
-import React, { useEffect, useState, useContext, useRef, useMemo } from "react";
+import React, { useEffect, useState, useContext, useRef, useMemo, useCallback } from "react";
 import "./index.css";
 import { useHistory, useLocation } from "react-router-dom";
 import { viewRoutes } from "@src/route/index";
-import { useQuery } from '@src/utils/useHooks'
+import { useSynchronous, useQuery } from '@src/utils/useHooks'
+import { connect } from "react-redux";
 
-const AppTop = () => {
+const AppTop = (props) => {
+  const { ipcCreateWin, changeHasParentState } = props;
   const l = useLocation();
   const h = useHistory();
   let query = useQuery();
   const operate = useRef(null);
-  const [winKey, setWinKey] = useState("Home");
-  const [operateCount, setOperateCount] = useState(0);
   const [isMaximized, setIsMaximized] = useState(false);
-  const [url, setUrl] = useState("");
   const [moreButton, setMoreButton] = useState(false);
+
+  const operateCount = useMemo(() => {
+    console.log('[operateCount]', operate.current, [operate.current], operate.current?.childElementCount)
+    return operate.current?.childElementCount || 0
+  }, [operate.current, hasParent])
+
   const setIsMaximizedFn = async () => {
     let is = await window.ipcR.ipcIsMaximized(winKey);
     setIsMaximized(!is);
   };
-  const openWin = (item) => {
-    let winKey = Math.random().toString().slice(2);
-    let { name, path, mate } = item;
-    const { winOp } = mate;
-    window.ipcR.ipcCreatewin({
-      winKey,
-      routeOp: winOp,
-      routeName: name,
-      routePath: `${path}?winKey=${winKey}`,
-    });
-  };
-  const hasParent = useMemo(() => {
+  const [hasParent, _setHasParent] = useState(false)
+  const getHasParent = useCallback(async () => {
     for (let [key, value] of query.entries()) {
       if (key === "winKey") {
-        return window.ipcR.ipcGetParentWindow(value);
+        let res = await window.ipcR.ipcGetParentWindow(value);
+        _setHasParent(res)
+        changeHasParentState(res)
+        return res
       }
     }
-    return false;
+  }, [query])
+  const url = useMemo(() => h.location.pathname ?? '', [h.location])
+  const winKey = useMemo(() => {
+    if (l.search) return l.search.replace("?", "").split("=")[1]
+    return 'Home'
+  }, [l.search])
+  useEffect(() => {
+    getHasParent()
   }, []);
-  useEffect(() => {
-    console.log('[app-top] l.search', l.search, l.search.replace("?", "").split("=")[1])
-    if (l.search) setWinKey(l.search.replace("?", "").split("=")[1]);
-  }, []);
-  useEffect(() => {
-    console.log('[app-top] location.href', location.href.match(/\/([^\/?]+)(?=\?|$)/)[1])
-    setUrl(location.href);
-  }, [winKey]);
-  useEffect(() => {
-    let childElementCount = operate?.current?.childElementCount;
-    if (childElementCount) setOperateCount(childElementCount);
-  }, [operate.current]);
   return (
     <>
-      <div className="app-top">
+      <div className="app-top" style={{ '--h': `${hasParent ? 50 : 100}px` }}>
         <div className="app-top-title">
           <div className="text">ElectronTitle</div>
           <div className="region-drag"></div>
@@ -73,11 +66,12 @@ const AppTop = () => {
                     {viewRoutes
                       .filter((item) => item.isMenu)
                       .map((item, index) => {
+                        const { name } = item
                         return (
                           <div
                             className="more-button-items-item"
                             key={index}
-                            onClick={() => openWin(item)}
+                            onClick={() => ipcCreateWin({ name })}
                           >
                             {item.mate.label}
                           </div>
@@ -106,7 +100,7 @@ const AppTop = () => {
             </div>
           </div>
         </div>
-        <div className="app-top-main">
+        {!hasParent && (<div className="app-top-main">
           <div className="app-top-main-history">
             <div className="home" onClick={() => h.push("/")}></div>
             <div className="left" onClick={() => h.goBack()}></div>
@@ -119,10 +113,16 @@ const AppTop = () => {
           <div className="app-top-main-url">
             <input type="text" value={url} disabled />
           </div>
-        </div>
+        </div>)}
       </div>
     </>
   );
 };
 
-export default AppTop;
+// 映射 dispatch 到组件的 props
+const mapDispatchToProps = useSynchronous((dispatch) => ({
+  ipcCreateWin: (data) => dispatch({ type: 'IPC_CREATE_WIN', data }),
+  changeHasParentState: (data) => dispatch({ type: 'IPC_CHANGE_HAS_PARENT', data }),
+}), ['IPC_CHANGE_HAS_PARENT']);
+
+export default connect(null, mapDispatchToProps)(AppTop); 

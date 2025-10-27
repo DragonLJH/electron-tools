@@ -170,7 +170,7 @@ export const DivCheckbox = (props) => {
     }, [checked, onChange, disabled]);
 
     return (
-        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+        <div className="custom-checkbox">
             <div
                 ref={ref}
                 role="checkbox"
@@ -178,16 +178,9 @@ export const DivCheckbox = (props) => {
                 tabIndex={disabled ? -1 : 0}
                 onClick={() => onChange(!checked)}
                 style={{
-                    width: "20px",
-                    height: "20px",
-                    borderRadius: "4px",
                     border: `1px solid ${checked ? "#2563eb" : "#d1d5db"}`,
                     backgroundColor: checked ? "#2563eb" : "#ffffff",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
                     cursor: disabled ? "not-allowed" : "pointer",
-                    outline: "none",
                 }}
             >
                 {checked && (

@@ -1,26 +1,26 @@
 .d-config-form {
-//   input {
-//     -webkit-appearance: none; /* 去掉默认的WebKit样式 */
-//     -moz-appearance: none; /* 去掉默认的Mozilla样式 */
-//     appearance: none; /* 去掉默认的样式 */
-//     border: none; /* 去掉边框 */
-//     outline: none; /* 去掉轮廓 */
-//     background: none; /* 去掉背景 */
-//     padding: 0; /* 去掉内边距 */
-//     margin: 0; /* 去掉外边距 */
-//     font-family: inherit; /* 继承字体 */
-//     font-size: inherit; /* 继承字体大小 */
-//     color: inherit; /* 继承文字颜色 */
-//     &[type="radio"] {
-//       padding: 5px;
-//       margin: 0 5px;
-//       outline: solid 1px #ccc;
-//       border-radius: 50%;
-//       &[checked="true"] {
-//         background-color: #f00;
-//       }
-//     }
-//   }
+  //   input {
+  //     -webkit-appearance: none; /* 去掉默认的WebKit样式 */
+  //     -moz-appearance: none; /* 去掉默认的Mozilla样式 */
+  //     appearance: none; /* 去掉默认的样式 */
+  //     border: none; /* 去掉边框 */
+  //     outline: none; /* 去掉轮廓 */
+  //     background: none; /* 去掉背景 */
+  //     padding: 0; /* 去掉内边距 */
+  //     margin: 0; /* 去掉外边距 */
+  //     font-family: inherit; /* 继承字体 */
+  //     font-size: inherit; /* 继承字体大小 */
+  //     color: inherit; /* 继承文字颜色 */
+  //     &[type="radio"] {
+  //       padding: 5px;
+  //       margin: 0 5px;
+  //       outline: solid 1px #ccc;
+  //       border-radius: 50%;
+  //       &[checked="true"] {
+  //         background-color: #f00;
+  //       }
+  //     }
+  //   }
   display: flex;
   flex-wrap: wrap;
   gap: 10px;
@@ -63,6 +63,20 @@
         text-align: center;
         line-height: 20px;
       }
+    }
+  }
+  .custom-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    [role="checkbox"] {
+      width: 20px;
+      height: 20px;
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      outline: none;
     }
   }
 }

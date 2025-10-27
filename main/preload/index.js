@@ -23,7 +23,7 @@ contextBridge.exposeInMainWorld("ipcR", {
   ipcReadFile: ({ path, encoding }) =>
     ipcRenderer.invoke("ipc-readFile", { path, encoding }),
   ipcAppPath: () => ipcRenderer.invoke("ipc-appPath"),
-  ipcCreatewin: ({ routeOp, routePath, winKey }) =>
+  ipcCreateWin: ({ routeOp, routePath, winKey }) =>
     routeOp.isCreate &&
     ipcRenderer.send("ipc-createwin", { winKey, routeOp, routePath }),
   ipcGetWin: (routePath) => ipcRenderer.invoke("ipc-getWin", routePath),
