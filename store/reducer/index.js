@@ -47,7 +47,8 @@ const initialState = {
   }, {}),
   // route
   routes: [],
-  homeViewRoutes: []
+  homeViewRoutes: [],
+  hasParent: false,
 };
 const actionsFn = {
   CHANGE_CONFIGURATION(data, state) {
@@ -79,13 +80,16 @@ const actionsFn = {
     let { name, path, mate } = item;
     const { winOp } = mate;
     if (typeof window !== "undefined" && window.ipcR) {
-      window.ipcR.ipcCreatewin({
+      window.ipcR.ipcCreateWin({
         winKey,
         routeOp: winOp,
         routeName: name,
         routePath: `${path}?winKey=${winKey}`,
       });
     }
+  },
+  IPC_CHANGE_HAS_PARENT(data) {
+    return { hasParent: data };
   },
   // IPC_UPDATE_STATE(data, state) {
   //   if (typeof window !== "undefined") {
